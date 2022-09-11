@@ -5,8 +5,8 @@ namespace SuperNetwork.TxSocket.Basics
     internal class FileBase
     {
         private int _fileLabel = 0;//文件的标签
-        private int _fileLenth = 0;//文件总长度
-        private byte _fileClassification = PasswordCode._photographCode;//图片，文本或其他
+        private readonly int _fileLenth = 0;//文件总长度
+        private readonly byte _fileClassification = PasswordCode._photographCode;//图片，文本或其他
         private byte[] _fileDateAll = null;//要发送的数据
         private byte[] _sendDate = null;//已发送的数据
        /// <summary>

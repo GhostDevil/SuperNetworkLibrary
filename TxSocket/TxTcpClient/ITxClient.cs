@@ -35,12 +35,12 @@ namespace SuperNetwork.TxSocket
         /// 客户端向服务器发送图片数据
         /// </summary>
         /// <param name="data">字节数据</param>
-        void sendMessage(byte[] data);
+        void SendMessage(byte[] data);
         /// <summary>
         /// 客户端向服务器发送文本数据
         /// </summary>
         /// <param name="data">文本数据</param>
-        void sendMessage(string data);
+        void SendMessage(string data);
         /// <summary>
         /// 发送文件；如果地址等不正确会抛出相应的异常；首先要先到FileStart启动文件发送系统;
         /// </summary>

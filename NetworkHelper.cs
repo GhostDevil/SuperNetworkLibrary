@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using SuperFramework.SuperConvert;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -276,17 +275,17 @@ namespace SuperNetwork
         {
             string tempLocalIp = "";
             //本地计算机的网络接口对象
-            System.Net.NetworkInformation.NetworkInterface[] adapters = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+            NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             //遍历本地计算机的网络接口对象
-            foreach (System.Net.NetworkInformation.NetworkInterface adapter in adapters)
+            foreach (NetworkInterface adapter in adapters)
             {
                 //提供IPv4或IPv6的网络接口信息
-                System.Net.NetworkInformation.IPInterfaceProperties adapterProperties = adapter.GetIPProperties();
+                IPInterfaceProperties adapterProperties = adapter.GetIPProperties();
                 //存储一组 UnicastIPAddressInformation 类型
-                System.Net.NetworkInformation.UnicastIPAddressInformationCollection allAddress = adapterProperties.UnicastAddresses;
+                UnicastIPAddressInformationCollection allAddress = adapterProperties.UnicastAddresses;
                 if (allAddress.Count > 0)
                 {
-                    foreach (System.Net.NetworkInformation.UnicastIPAddressInformation addr in allAddress)
+                    foreach (UnicastIPAddressInformation addr in allAddress)
                     {
                         //strIpPrefix 为要搜寻的字符串；如果找到该字符串，则为 value 的从零开始的索引位置；
                         //如果未找到该字符串，则为 -1。如果 value 为 System.String.Empty，则返回值为0
@@ -382,7 +381,7 @@ namespace SuperNetwork
         {
             try
             {
-                using (System.Net.WebClient wc = new System.Net.WebClient())
+                using (WebClient wc = new WebClient())
                 {
                     string html = wc.DownloadString("http://ip.qq.com");
                     System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(html, "<span class=\"red\">([^<]+)</span>");
@@ -448,7 +447,7 @@ namespace SuperNetwork
                 return string.Empty;
             try
             {
-                System.Net.IPHostEntry host = System.Net.Dns.GetHostEntry(hostName);
+                IPHostEntry host = Dns.GetHostEntry(hostName);
                 return host.AddressList.GetValue(0).ToString();
             }
             catch (Exception)
@@ -561,14 +560,13 @@ namespace SuperNetwork
         /// <returns></returns>
         public static string IpTo16Str(string ip)
         {
-            IPAddress address;
             string str = "";
-            if (IPAddress.TryParse(ip, out address))
+            if (IPAddress.TryParse(ip, out IPAddress address))
             {
                 string[] vs = ip.Split('.');
                 foreach (var item in vs)
                 {
-                    str += Hexadecimal.ConvertBase(item, 10, 16) + " ";
+                    str += Convert.ToInt32(item, 10); // Hexadecimal.ConvertBase(item, 10, 16) + " ";
                 }
                 str = str.Trim();
             }
@@ -581,18 +579,17 @@ namespace SuperNetwork
         /// <returns></returns>
         public static string IpBy16Str(string ip16)
         {
-            IPAddress address;
             string str = "";
             if (!string.IsNullOrWhiteSpace(ip16))
             {
                 string[] vs = ip16.Split(' ');
                 foreach (var item in vs)
                 {
-                    str += Hexadecimal.ConvertBase(item, 16, 10) + ".";
+                    str += Convert.ToInt32(item, 16); //Hexadecimal.ConvertBase(item, 16, 10) + ".";
                 }
                 str = str.TrimEnd('.');
             }
-            if (IPAddress.TryParse(str, out address))
+            if (IPAddress.TryParse(str, out IPAddress _))
                 return str;
             else
                 return "";
@@ -632,7 +629,7 @@ namespace SuperNetwork
 
         static PingCompletedEventHandler ipHandle = null;
         static PingCompletedEventHandler ipNoHandle = null;
-        static List<string> ipList = new List<string>();
+        static readonly List<string> ipList = new List<string>();
         /// <summary>
         /// 
         /// </summary>
@@ -714,24 +711,24 @@ namespace SuperNetwork
                 }
                 #endregion
                 #region 网卡信息
-                System.Console.WriteLine("-----------------------------------------------------------");
-                System.Console.WriteLine("-- " + fCardType);
-                System.Console.WriteLine("-----------------------------------------------------------");
-                System.Console.WriteLine("Id .................. : {0}", adapter.Id); // 获取网络适配器的标识符  
-                System.Console.WriteLine("Name ................ : {0}", adapter.Name); // 获取网络适配器的名称  
-                System.Console.WriteLine("Description ......... : {0}", adapter.Description); // 获取接口的描述  
-                System.Console.WriteLine("Interface type ...... : {0}", adapter.NetworkInterfaceType); // 获取接口类型  
-                System.Console.WriteLine("Is receive only...... : {0}", adapter.IsReceiveOnly); // 获取 Boolean 值，该值指示网络接口是否设置为仅接收数据包。  
-                System.Console.WriteLine("Multicast............ : {0}", adapter.SupportsMulticast); // 获取 Boolean 值，该值指示是否启用网络接口以接收多路广播数据包。  
-                System.Console.WriteLine("Speed ............... : {0}", adapter.Speed); // 网络接口的速度  
-                System.Console.WriteLine("Physical Address .... : {0}", adapter.GetPhysicalAddress().ToString()); // MAC 地址  
+                Console.WriteLine("-----------------------------------------------------------");
+                Console.WriteLine("-- " + fCardType);
+                Console.WriteLine("-----------------------------------------------------------");
+                Console.WriteLine("Id .................. : {0}", adapter.Id); // 获取网络适配器的标识符  
+                Console.WriteLine("Name ................ : {0}", adapter.Name); // 获取网络适配器的名称  
+                Console.WriteLine("Description ......... : {0}", adapter.Description); // 获取接口的描述  
+                Console.WriteLine("Interface type ...... : {0}", adapter.NetworkInterfaceType); // 获取接口类型  
+                Console.WriteLine("Is receive only...... : {0}", adapter.IsReceiveOnly); // 获取 Boolean 值，该值指示网络接口是否设置为仅接收数据包。  
+                Console.WriteLine("Multicast............ : {0}", adapter.SupportsMulticast); // 获取 Boolean 值，该值指示是否启用网络接口以接收多路广播数据包。  
+                Console.WriteLine("Speed ............... : {0}", adapter.Speed); // 网络接口的速度  
+                Console.WriteLine("Physical Address .... : {0}", adapter.GetPhysicalAddress().ToString()); // MAC 地址  
 
                 IPInterfaceProperties fIPInterfaceProperties = adapter.GetIPProperties();
                 UnicastIPAddressInformationCollection UnicastIPAddressInformationCollection = fIPInterfaceProperties.UnicastAddresses;
                 foreach (UnicastIPAddressInformation UnicastIPAddressInformation in UnicastIPAddressInformationCollection)
                 {
                     if (UnicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork)
-                        System.Console.WriteLine("Ip Address .......... : {0}", UnicastIPAddressInformation.Address); // Ip 地址  
+                        Console.WriteLine("Ip Address .......... : {0}", UnicastIPAddressInformation.Address); // Ip 地址  
                 }
                 list.Add(new NetworkInterfaceInfo() { ConnectName= conname, NetworkInfo = adapter, Type = fCardType });
                 #endregion

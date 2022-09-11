@@ -128,7 +128,7 @@ namespace SuperNetwork
 
                 }
 
-                dwStart = System.Environment.TickCount; // Start timing 
+                dwStart = Environment.TickCount; // Start timing 
                                                         //send the Packet over the socket 
                 if ((nBytes = socket.SendTo(sendbuf, PacketSize, 0, epServer)) == SOCKET_ERROR)
                 {
@@ -154,13 +154,13 @@ namespace SuperNetwork
                     }
                     else if (nBytes > 0)
                     {
-                        spend = System.Environment.TickCount - dwStart; // stop timing 
+                        spend = Environment.TickCount - dwStart; // stop timing 
                                                                         //"Reply from " + epServer.ToString() + " in "
                                                                         //+ dwStop + "ms.  Received: " + nBytes + " Bytes.";
                         b = true;
 
                     }
-                    timeout = System.Environment.TickCount - dwStart;
+                    timeout = Environment.TickCount - dwStart;
                     if (timeout > 1000)
                     {
                         error = "超时";
@@ -257,7 +257,7 @@ namespace SuperNetwork
         #endregion
 
         #region  是否能 Ping 通指定的主机 
-        static SocketAsyncEventArgs socketAsyncEventArgs;
+        static readonly SocketAsyncEventArgs socketAsyncEventArgs;
         /// <summary>
         /// 是否能 Ping 通指定的主机
         /// </summary>
@@ -407,7 +407,7 @@ namespace SuperNetwork
                 // 是否 Ping 的通
                 if (Ping(ip))
                 {
-                    IPHostEntry host = System.Net.Dns.GetHostEntry(ip);
+                    IPHostEntry host = Dns.GetHostEntry(ip);
                     return host.HostName;
                 }
                 else

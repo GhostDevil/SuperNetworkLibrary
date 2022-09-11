@@ -5,7 +5,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileSend
 {
     internal class FileSendMust : FileMustBase, IFileSendMust
     {
-        private IFileSendMust fileSendMust = null;
+        private readonly IFileSendMust fileSendMust = null;
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -20,17 +20,17 @@ namespace SuperNetwork.TxSocket.FileCenter.FileSend
 
         public void SendSuccess(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { this.fileSendMust.SendSuccess(FileLabel); });
+            CommonMethod.eventInvoket(() => { fileSendMust.SendSuccess(FileLabel); });
         }
 
         public void FileRefuse(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { this.fileSendMust.FileRefuse(FileLabel); });
+            CommonMethod.eventInvoket(() => { fileSendMust.FileRefuse(FileLabel); });
         }
 
         public void FileStartOn(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { this.fileSendMust.FileStartOn(FileLabel); });
+            CommonMethod.eventInvoket(() => { fileSendMust.FileStartOn(FileLabel); });
         }
 
         #endregion

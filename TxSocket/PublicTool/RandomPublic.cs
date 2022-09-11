@@ -4,8 +4,8 @@ namespace SuperNetwork.TxSocket.PublicTool
 {
     internal class RandomPublic
     {
-        private static Random _randomNumber = new Random(500);
-        private static Random _randomTime = new Random();
+        private static readonly Random _randomNumber = new Random(500);
+        private static readonly Random _randomTime = new Random();
             /// <summary>
             /// 根据指定种子取一个随机数
             /// </summary>

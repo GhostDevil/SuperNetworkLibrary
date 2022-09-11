@@ -3,6 +3,8 @@ using System.Text;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using System.Linq;
+
 namespace SuperNetwork.SuperSocket.SuperTcp
 {
 
@@ -13,24 +15,24 @@ namespace SuperNetwork.SuperSocket.SuperTcp
     /// 作 者:不良帥
     /// 描 述:异步SOCKET-Tcp
     /// </summary>
-    public class TCPAsyncSocketHelper
+    public class TCPSocketAsyncHelper
     {
 
 
         #region 私有字段 成员
 
         private Socket m_socket = null;                                             //socket
-        string m_id = "";                                                           //socket唯一标识，GUID
+        readonly string m_id = "";                                                           //socket唯一标识，GUID
 
         private readonly bool m_isSerevr;                                           //服务器标志位
-        private int m_iBackBag;
-        private string m_ipAddress;
-        private int m_port;
+        private readonly int m_iBackBag;
+        private readonly string m_ipAddress;
+        private readonly int m_port;
 
-        private TCPDelegate.AsyncDataAcceptedEventHandler m_onAsyncDataAcceptedEvent = null;    //接收数据流
-        private TCPDelegate.AsyncDataSendedEventHandler m_onAsyncDataSendedEvent = null;        //发送结束
-        private TCPDelegate.AsyncSocketAcceptEventHandler m_onAsyncSocketAcceptEvent = null;    //接收连接
-        private TCPDelegate.AsyncSocketClosedEventHandler m_onAsyncSocketClosedEvent = null;    //关闭连接
+        private TCPDelegate.DataAcceptedAsyncEventHandler m_onAsyncDataAcceptedEvent = null;    //接收数据流
+        private TCPDelegate.DataSendedAsyncEventHandler m_onAsyncDataSendedEvent = null;        //发送结束
+        private TCPDelegate.SocketAcceptAsyncEventHandler m_onAsyncSocketAcceptEvent = null;    //接收连接
+        private TCPDelegate.SocketClosedAsyncEventHandler m_onAsyncSocketClosedEvent = null;    //关闭连接
 
         #endregion
 
@@ -83,7 +85,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 连接关闭事件
         /// </summary>
-        public event TCPDelegate.AsyncSocketClosedEventHandler AsyncSocketClosedEvent
+        public event TCPDelegate.SocketClosedAsyncEventHandler SocketClosedAsyncEvent
         {
             add
             {
@@ -98,7 +100,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 客户端连接事件
         /// </summary>
-        public event TCPDelegate.AsyncSocketAcceptEventHandler AsyncSocketAcceptEvent
+        public event TCPDelegate.SocketAcceptAsyncEventHandler SocketAcceptAsyncEvent
         {
             add
             {
@@ -113,22 +115,22 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 数据接收完成事件
         /// </summary>
-        public event TCPDelegate.AsyncDataAcceptedEventHandler AsyncDataAcceptedEvent
+        public event TCPDelegate.DataAcceptedAsyncEventHandler DataAcceptedAsyncEvent
         {
             add
             {
-                this.m_onAsyncDataAcceptedEvent += value;
+                m_onAsyncDataAcceptedEvent += value;
             }
             remove
             {
-                this.m_onAsyncDataAcceptedEvent -= value;
+                m_onAsyncDataAcceptedEvent -= value;
             }
         }
 
         /// <summary>
         /// 数据发送完成事件
         /// </summary>
-        public event TCPDelegate.AsyncDataSendedEventHandler AsyncDataSendedEvent
+        public event TCPDelegate.DataSendedAsyncEventHandler DataSensedAsyncEvent
         {
             add
             {
@@ -151,7 +153,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="m_pHostPort">主机端口</param>
         /// <param name="m_pIsAsServer">是否作为服务器，默认为false</param>
         /// <param name="m_pIBackBag">支持多少个客户端</param>
-        public TCPAsyncSocketHelper(string m_pHostAddrss, int m_pHostPort, bool m_pIsAsServer = false, int m_pIBackBag = 100)
+        public TCPSocketAsyncHelper(string m_pHostAddrss, int m_pHostPort, bool m_pIsAsServer = false, int m_pIBackBag = 100)
         {
             m_isSerevr = m_pIsAsServer;
             m_iBackBag = m_pIBackBag;
@@ -164,7 +166,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 构造函数，用于服务器构造与客户端的异步socket
         /// </summary>
         /// <param name="linkObject">客户端socket</param>
-        private TCPAsyncSocketHelper(Socket linkObject)
+        private TCPSocketAsyncHelper(Socket linkObject)
         {
             m_socket = linkObject;
             m_id = Guid.NewGuid().ToString();
@@ -178,7 +180,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 打开通道
         /// </summary>
         /// <returns>成功返回true，否则失败</returns>
-        public bool AsyncOpen()
+        public bool OpenAsync()
         {
 
             try
@@ -195,7 +197,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                     m_socket.Bind(ipe);
                     m_socket.Listen(m_iBackBag);
                     m_socket.BeginAccept(new AsyncCallback(AcceptCallBack), m_socket);//异步
-                   
+
                     return true;
                 }
                 else
@@ -212,14 +214,14 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                 }
             }
             catch (Exception) { return false; }
-       
+
         }
 
         /// <summary>
         /// 发送二进制数据
         /// </summary>
         /// <param name="SendData"></param>
-        public void AsyncSend(byte[] SendData)
+        public void SendAsync(byte[] SendData)
         {
             m_socket.BeginSend(SendData, 0, SendData.Length, 0, new AsyncCallback(SendCallBack), m_socket);
         }
@@ -227,7 +229,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 关闭通道
         /// </summary>
-        public void AsyncClose()
+        public void CloseAsync()
         {
             if (!m_isSerevr)
             {
@@ -278,12 +280,15 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                 if (m_socket == null)
                     return;
                 Socket handler = m_socket.EndAccept(ar);
-                TCPAsyncSocketHelper NewSocket = new TCPAsyncSocketHelper(handler);
+                TCPSocketAsyncHelper NewSocket = new TCPSocketAsyncHelper(handler);
 
                 //激发事件，异步触发
                 if (m_onAsyncSocketAcceptEvent != null)
-                    foreach (TCPDelegate.AsyncSocketAcceptEventHandler item in m_onAsyncSocketAcceptEvent.GetInvocationList())
+                {
+                    foreach (TCPDelegate.SocketAcceptAsyncEventHandler item in m_onAsyncSocketAcceptEvent.GetInvocationList().Cast<TCPDelegate.SocketAcceptAsyncEventHandler>())
                         item.BeginInvoke(NewSocket, null, null);
+                }
+
                 StateObject state = new StateObject() { workSocket = handler };
                 handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), state);
                 //继续投递监听请求
@@ -308,20 +313,29 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                     Array.Copy(state.buffer, 0, _Readbyte, 0, bytesRead);
                     //接收完成，激发事件
                     if (m_onAsyncDataAcceptedEvent != null)
-                        foreach (TCPDelegate.AsyncDataAcceptedEventHandler item in m_onAsyncDataAcceptedEvent.GetInvocationList())
+                    {
+                        foreach (TCPDelegate.DataAcceptedAsyncEventHandler item in m_onAsyncDataAcceptedEvent.GetInvocationList().Cast<TCPDelegate.DataAcceptedAsyncEventHandler>())
                             item.BeginInvoke(this, _Readbyte, null, null);
+                    }
+
                     state.workSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), state);
                 }
                 else
+                {
                     if (m_onAsyncSocketClosedEvent != null)
-                        foreach (TCPDelegate.AsyncSocketClosedEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList())
-                            item.BeginInvoke((new TCPAsyncSocketHelper(this.m_ipAddress, this.m_port) {m_socket  = state.workSocket}), null, null);
+                    {
+                        foreach (TCPDelegate.SocketClosedAsyncEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList().Cast<TCPDelegate.SocketClosedAsyncEventHandler>())
+                            item.BeginInvoke((new TCPSocketAsyncHelper(m_ipAddress, m_port) { m_socket = state.workSocket }), null, null);
+                    }
+                }
             }
             catch (SocketException)
             {
                 if (m_onAsyncSocketClosedEvent != null)
-                    foreach (TCPDelegate.AsyncSocketClosedEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList())
-                        item.BeginInvoke((new TCPAsyncSocketHelper(this.m_ipAddress, this.m_port) { m_socket = state.workSocket }), null, null);
+                {
+                    foreach (TCPDelegate.SocketClosedAsyncEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList().Cast<TCPDelegate.SocketClosedAsyncEventHandler>())
+                        item.BeginInvoke((new TCPSocketAsyncHelper(m_ipAddress, m_port) { m_socket = state.workSocket }), null, null);
+                }
             }
         }
 
@@ -335,18 +349,24 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             {
                 m_socket.EndSend(ar);
                 if (m_onAsyncDataSendedEvent != null)
-                    foreach (TCPDelegate.AsyncDataSendedEventHandler item in m_onAsyncDataSendedEvent.GetInvocationList())
+                {
+                    foreach (TCPDelegate.DataSendedAsyncEventHandler item in m_onAsyncDataSendedEvent.GetInvocationList().Cast<TCPDelegate.DataSendedAsyncEventHandler>())
                         item.BeginInvoke(this, true, null, null);
+                }
             }
             catch (SocketException)
             {
                 if (m_onAsyncDataSendedEvent != null)
-                    foreach (TCPDelegate.AsyncDataSendedEventHandler item in m_onAsyncDataSendedEvent.GetInvocationList())
+                {
+                    foreach (TCPDelegate.DataSendedAsyncEventHandler item in m_onAsyncDataSendedEvent.GetInvocationList().Cast<TCPDelegate.DataSendedAsyncEventHandler>())
                         item.BeginInvoke(this, false, null, null);
+                }
 
                 if (m_onAsyncSocketClosedEvent != null)
-                    foreach (TCPDelegate.AsyncSocketClosedEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList())
+                {
+                    foreach (TCPDelegate.SocketClosedAsyncEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList().Cast<TCPDelegate.SocketClosedAsyncEventHandler>())
                         item.BeginInvoke(this, null, null);
+                }
             }
         }
 
@@ -362,14 +382,18 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                 m_socket = null;
                 //m_socket.Dispose();
                 if (m_onAsyncDataSendedEvent != null)
-                    foreach (TCPDelegate.AsyncSocketClosedEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList())
+                {
+                    foreach (TCPDelegate.SocketClosedAsyncEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList().Cast<TCPDelegate.SocketClosedAsyncEventHandler>())
                         item.BeginInvoke(this, null, null);
+                }
             }
             catch (SocketException)
             {
                 if (m_onAsyncSocketClosedEvent != null)
-                    foreach (TCPDelegate.AsyncSocketClosedEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList())
+                {
+                    foreach (TCPDelegate.SocketClosedAsyncEventHandler item in m_onAsyncSocketClosedEvent.GetInvocationList().Cast<TCPDelegate.SocketClosedAsyncEventHandler>())
                         item.BeginInvoke(this, null, null);
+                }
             }
         }
 
@@ -380,13 +404,21 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         class StateObject
         {
-            // 客户端套接字。
+            /// <summary>
+            /// 客户端套接字
+            /// </summary>
             public Socket workSocket = null;
-            // 接收缓冲区大小。
+            /// <summary>
+            /// 接收缓冲区大小
+            /// </summary>
             public const int BufferSize = 1024 * 1024;
-            // 接收缓冲区。
+            /// <summary>
+            /// 接收缓冲区
+            /// </summary>
             public byte[] buffer = new byte[BufferSize];
-            // 接收数据的字符串。
+            /// <summary>
+            /// 接收数据的字符串
+            /// </summary>
             public StringBuilder sb = new StringBuilder();
         }
     }

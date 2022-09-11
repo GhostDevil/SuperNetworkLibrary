@@ -8,15 +8,15 @@ using SuperNetwork.TxSocket.PublicTool;
 namespace SuperNetwork.TxSocket
 {
     /// <summary>
-    /// 面向客户端的主线程类!
+    /// 面向客户端的主线程类
     /// </summary>
     public class TxSocketClient : TcpFTxBase, ITxClient
     {
         #region 基本属性区块
         private TxTcpState stateOne = null;
-        private Thread HeartThread = null;
-        private Thread StartThread = null;
-        private int _reconnectMax = 5;//当连接断开时是否重连,0为不重连,默认重连三次;
+        private Thread heartThread = null;
+        private Thread startThread = null;
+        private int _reconnectMax = 5;//当连接断开时是否重连,0为不重连,默认重连5次;
         private int _outTime = 10;//登录超时时间
         private bool outtimebool = false;//超时用到的临时变量
         private bool reconnectOn = false;//有没有在重连的临时变量
@@ -30,7 +30,7 @@ namespace SuperNetwork.TxSocket
         /// </summary>
         public event TxDelegate<bool, string> StartResult;
         /// <summary>
-        /// 当连接断开时是否重连,默认重连;
+        /// 当连接断开时是否重连,默认重连
         /// </summary>
         public int ReconnectMax
         {
@@ -61,14 +61,14 @@ namespace SuperNetwork.TxSocket
         {
             if (_engineStart)
                 return;
-            StartThread = new Thread(start);
-            StartThread.IsBackground = true;
-            StartThread.Start();
+            startThread = new Thread(Start);
+            startThread.IsBackground = true;
+            startThread.Start();
         }
         /// <summary>
         /// 启动客户端基础的一个线程
         /// </summary>
-        private void start()
+        private void Start()
         {
             if (reconnectOn)//如果是重连的延迟10秒
                 Thread.Sleep(9000 + RandomPublic.RandomTime(1000));
@@ -78,11 +78,11 @@ namespace SuperNetwork.TxSocket
                 socket.SendTimeout = 1000;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.NoDelay, true);
                 socket.BeginConnect(IpEndPoint, new AsyncCallback(AcceptCallback), socket);
-                loginTimeout(socket);//超时判断方法
+                LoginTimeout(socket);//超时判断方法
             }
             catch (Exception Ex)
             {
-                loginFailure(Ex.Message);//登录失败触发
+                LoginFailure(Ex.Message);//登录失败触发
             }
         }
         /// <summary>
@@ -102,14 +102,14 @@ namespace SuperNetwork.TxSocket
             {
                 if (outtimebool == true)
                     return; //说明已经超时了，已经触发登录失败了
-                loginFailure(Ex.Message);//登录失败触发
+                LoginFailure(Ex.Message);//登录失败触发
             }
         }
         #region  登录篇
         /// <summary>
         /// 重连模块
         /// </summary>
-        private void reconnect()
+        private void Reconnect()
         {
             if (_reconnectMax == 0)
                 return;//不重连直接返回
@@ -130,7 +130,7 @@ namespace SuperNetwork.TxSocket
         /// <summary>
         /// 登录之超时判断
         /// </summary>
-        private void loginTimeout(Socket socket)
+        private void LoginTimeout(Socket socket)
         {
             DateTime time1 = DateTime.Now;
             outtimebool = false;
@@ -142,7 +142,7 @@ namespace SuperNetwork.TxSocket
                 if ((int)(DateTime.Now - time1).TotalSeconds > _outTime)
                 {
                     outtimebool = true; socket.Close();
-                    loginFailure("连接超时");//登录失败触发
+                    LoginFailure("连接超时");//登录失败触发
                     break;
                 }
             }
@@ -150,13 +150,13 @@ namespace SuperNetwork.TxSocket
         /// <summary>
         /// 登录失败之后要处理的事情
         /// </summary>
-        private void loginFailure(string str)
+        private void LoginFailure(string str)
         {
             outtimebool = true;//登录有结果了，判断超时的线程跳出
             if (_engineStart == true)//失败的时候引擎都是关闭的
                 return;
             if (reconnectOn && reconnectCi < _reconnectMax)
-                reconnect();//继续重连
+                Reconnect();//继续重连
             else
             {
                 if (reconnectOn)
@@ -169,14 +169,14 @@ namespace SuperNetwork.TxSocket
         /// <summary>
         /// 当客户端完全连接上服务器之后要处理的一些事情
         /// </summary>
-        private void loginSuccess()
+        private void LoginSuccess()
         {
             _engineStart = true;
-            if (HeartThread == null)
+            if (heartThread == null)
             {//连接成功之后启动心跳线程
-                HeartThread = new Thread(heartThread);
-                HeartThread.IsBackground = true;
-                HeartThread.Start();
+                heartThread = new Thread(HeartThread);
+                heartThread.IsBackground = true;
+                heartThread.Start();
             }
             if (reconnectOn)
             { CommonMethod.eventInvoket(() => { StartResult(true, "重连成功"); }); reconnectOn = false; reconnectCi = 0; }
@@ -209,7 +209,7 @@ namespace SuperNetwork.TxSocket
             }
             catch (Exception Ex)
             {
-                lostClient(Ex.Message);//当突然断开的时候
+                LostClient(Ex.Message);//当突然断开的时候
             }
         }
         /// <summary>
@@ -230,7 +230,7 @@ namespace SuperNetwork.TxSocket
                     break;
                 case PasswordCode._serverToClient://客户端和服务端暗号正确；已登录;
                     Send(stateOne, EncryptionDecryptVerification.EncryptionVerification(PasswordCode._clientToServer));
-                    loginSuccess();
+                    LoginSuccess();
                     break;
                 case PasswordCode._clientCloseCode://服务器要求客户端关掉;
                     CloseEngine();
@@ -243,18 +243,12 @@ namespace SuperNetwork.TxSocket
         /// 客户端向服务器发送图片数据
         /// </summary>
         /// <param name="data">字节数据</param>
-        public void sendMessage(byte[] data)
-        {
-            SendMessage(stateOne, data);
-        }
+        public void SendMessage(byte[] data) => SendMessage(stateOne, data);
         /// <summary>
         /// 客户端向服务器发送文本数据
         /// </summary>
         /// <param name="data">文本数据</param>
-        public void sendMessage(string data)
-        {
-            SendMessage(stateOne, data);
-        }
+        public void SendMessage(string data) => SendMessage(stateOne, data);
         /// <summary>
         /// 发送文件；如果地址等不正确会抛出相应的异常；首先要先到FileStart启动文件发送系统;
         /// </summary>
@@ -320,7 +314,7 @@ namespace SuperNetwork.TxSocket
         /// <summary>
         /// 心跳线程
         /// </summary>
-        private void heartThread()
+        private void HeartThread()
         {
             while (true)
             {
@@ -331,7 +325,7 @@ namespace SuperNetwork.TxSocket
                 }
                 else if ((int)(DateTime.Now - stateOne.HeartTime).TotalSeconds > HeartTime * 4)//4次没有收到失去联系
                 {
-                    lostClient("客户端长期连接不上服务器根据Reconnection值判断是否重连");//当突然断开的时候
+                    LostClient("客户端长期连接不上服务器根据Reconnection值判断是否重连");//当突然断开的时候
                     continue;
                 }
                 else
@@ -341,7 +335,7 @@ namespace SuperNetwork.TxSocket
                 if (_engineStart == false)
                     break;
             }
-            HeartThread = null;
+            heartThread = null;
         }
         #endregion
         #region  断开篇
@@ -363,15 +357,15 @@ namespace SuperNetwork.TxSocket
         /// 当客户端突然与服务器断开的时候
         /// </summary>
         /// <param name="str"></param>
-        private void lostClient(string str)
+        private void LostClient(string str)
         {
             if (stateOne.ConnectOk == true)
                 return;//说明这个引擎已经触发关闭了;下面的就不用执行了
             if (_engineStart == false)
-            { loginFailure(str); return; }//这里说明已经登录了；但由于服务器的原因被拒绝了
+            { LoginFailure(str); return; }//这里说明已经登录了；但由于服务器的原因被拒绝了
             OnEngineLost(str);//当客户端突然断开的时候触发此事件
             if (_reconnectMax > 0)//如果是重连就重连，不重连就关闭客户端释放资源
-                reconnect();
+                Reconnect();
             else
                 CloseEngine();
         }

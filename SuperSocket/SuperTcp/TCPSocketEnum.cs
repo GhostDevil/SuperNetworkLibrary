@@ -5,7 +5,7 @@
     /// 作 者:不良帥
     /// 描 述:Socket_Tcp通讯连接状态
     /// </summary>
-    public class TCPSyncSocketEnum
+    public class TCPSocketEnum
     {
         /// <summary>
         /// 连接状态

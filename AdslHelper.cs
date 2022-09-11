@@ -12,7 +12,7 @@ namespace SuperNetwork
     {
         // Fields
         private bool bConnected;
-        private ConnectionNotify ConnectNotify;
+        private readonly ConnectionNotify ConnectNotify;
         private const int DNLEN = 15;
         private string EntryName;
         private const int ERROR_BUFFER_TOO_SMALL = 0x25b;
@@ -50,13 +50,13 @@ namespace SuperNetwork
         /// <param name="interval"></param>
         public AdslHelper(ConnectionNotify ConnectionDelegate, double interval)
         {
-            this.ConnectNotify = ConnectionDelegate;
-            this.NotifyTimer = new Timer(interval);
-            this.NotifyTimer.Elapsed += new ElapsedEventHandler(this.TimerEvent);
-            this.Rasconn = new RASCONN[1];
-            this.Rasconn[0].dwSize = Marshal.SizeOf(this.Rasconn[0]);
-            this.NotifyTimer.Start();
-            this.bConnected = false;
+            ConnectNotify = ConnectionDelegate;
+            NotifyTimer = new Timer(interval);
+            NotifyTimer.Elapsed += new ElapsedEventHandler(TimerEvent);
+            Rasconn = new RASCONN[1];
+            Rasconn[0].dwSize = Marshal.SizeOf(Rasconn[0]);
+            NotifyTimer.Start();
+            bConnected = false;
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = this.GetErrorString(nErrorValue);
+            strError = GetErrorString(nErrorValue);
             return false;
         }
 
@@ -91,7 +91,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = this.GetErrorString(nErrorValue);
+            strError = GetErrorString(nErrorValue);
             return false;
         }
 
@@ -107,24 +107,24 @@ namespace SuperNetwork
             RASDIALPARAMS structure = new RASDIALPARAMS();
             structure.dwSize = Marshal.SizeOf(structure);
             structure.szEntryName = strEntryName;
-            RasDialEvent lpvNotifier = new RasDialEvent(this.RasDialFunc);
+            RasDialEvent lpvNotifier = new RasDialEvent(RasDialFunc);
             int nErrorValue = RasGetEntryDialParams(null, ref structure, ref lpfPassword);
             if (nErrorValue != 0)
             {
-                strError = this.GetErrorString(nErrorValue);
+                strError = GetErrorString(nErrorValue);
                 return false;
             }
-            this.ConnectNotify("正在连接" + structure.szEntryName + "...", 1);
-            this.EntryName = strEntryName;
-            this.hrasconn = 0;
-            nErrorValue = RasDial(0, null, ref structure, 0, lpvNotifier, ref this.hrasconn);
+            ConnectNotify("正在连接" + structure.szEntryName + "...", 1);
+            EntryName = strEntryName;
+            hrasconn = 0;
+            nErrorValue = RasDial(0, null, ref structure, 0, lpvNotifier, ref hrasconn);
             if (nErrorValue != 0)
             {
-                strError = this.GetErrorString(nErrorValue);
-                this.ConnectNotify(strError, 3);
+                strError = GetErrorString(nErrorValue);
+                ConnectNotify(strError, 3);
                 return false;
             }
-            this.ConnectNotify("正在打开端口...", 1);
+            ConnectNotify("正在打开端口...", 1);
             strError = null;
             return true;
         }
@@ -144,7 +144,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = this.GetErrorString(nErrorValue);
+            strError = GetErrorString(nErrorValue);
             return false;
         }
         /// <summary>
@@ -195,14 +195,14 @@ namespace SuperNetwork
                     break;
 
                 default:
-                    strError = this.GetErrorString(nErrorValue);
+                    strError = GetErrorString(nErrorValue);
                     strEntryName = null;
                     return false;
             }
             nErrorValue = RasEnumEntries(null, null, lprasentryname, ref lpcb, ref lpcEntries);
             if (nErrorValue != 0)
             {
-                strError = this.GetErrorString(nErrorValue);
+                strError = GetErrorString(nErrorValue);
                 strEntryName = null;
                 return false;
             }
@@ -234,7 +234,7 @@ namespace SuperNetwork
             int nErrorValue = RasGetEntryDialParams(null, ref structure, ref lpfPassword);
             if (nErrorValue != 0)
             {
-                strError = this.GetErrorString(nErrorValue);
+                strError = GetErrorString(nErrorValue);
                 strPhoneNumber = null;
                 strUserName = null;
                 strPassword = null;
@@ -287,32 +287,32 @@ namespace SuperNetwork
         /// <returns>结果</returns>
         public bool HangUp(out string strError)
         {
-            this.bConnected = false;
-            if (this.hrasconn != 0)
+            bConnected = false;
+            if (hrasconn != 0)
             {
-                int nErrorValue = RasHangUp(this.hrasconn);
+                int nErrorValue = RasHangUp(hrasconn);
                 if (nErrorValue != 0)
                 {
-                    strError = this.GetErrorString(nErrorValue);
-                    this.ConnectNotify(strError, 0);
+                    strError = GetErrorString(nErrorValue);
+                    ConnectNotify(strError, 0);
                     return false;
                 }
             }
-            foreach (RASCONN rasconn in this.Rasconn)
+            foreach (RASCONN rasconn in Rasconn)
             {
                 if (rasconn.hrasconn != 0)
                 {
                     int num2 = RasHangUp(rasconn.hrasconn);
                     if (num2 != 0)
                     {
-                        strError = this.GetErrorString(num2);
-                        this.ConnectNotify(strError, 0);
+                        strError = GetErrorString(num2);
+                        ConnectNotify(strError, 0);
                         return false;
                     }
                 }
             }
             strError = null;
-            this.ConnectNotify("连接中断.", 0);
+            ConnectNotify("连接中断.", 0);
             return true;
         }
 
@@ -332,18 +332,18 @@ namespace SuperNetwork
         {
             if (dwError != 0)
             {
-                this.ConnectNotify(this.GetErrorString(dwError), 3);
-                this.bConnected = false;
-                if (this.hrasconn != 0)
+                ConnectNotify(GetErrorString(dwError), 3);
+                bConnected = false;
+                if (hrasconn != 0)
                 {
-                    int nErrorValue = RasHangUp(this.hrasconn);
+                    int nErrorValue = RasHangUp(hrasconn);
                     if (nErrorValue == 0)
                     {
-                        this.ConnectNotify("连接中断.", 0);
+                        ConnectNotify("连接中断.", 0);
                     }
                     else
                     {
-                        this.ConnectNotify(this.GetErrorString(nErrorValue), 0);
+                        ConnectNotify(GetErrorString(nErrorValue), 0);
                     }
                 }
             }
@@ -351,20 +351,20 @@ namespace SuperNetwork
             {
                 if (rasconnstate == RASCONNSTATE.RASCS_PortOpened)
                 {
-                    this.ConnectNotify("端口已经打开.", 1);
+                    ConnectNotify("端口已经打开.", 1);
                 }
                 if (rasconnstate == RASCONNSTATE.RASCS_ConnectDevice)
                 {
-                    this.ConnectNotify("正在拨...", 1);
+                    ConnectNotify("正在拨...", 1);
                 }
                 if (rasconnstate == RASCONNSTATE.RASCS_Authenticate)
                 {
-                    this.ConnectNotify("正在验证用户名与密码.", 1);
+                    ConnectNotify("正在验证用户名与密码.", 1);
                 }
                 if (rasconnstate == RASCONNSTATE.RASCS_Connected)
                 {
-                    this.bConnected = true;
-                    this.ConnectNotify("成功连接到" + this.EntryName + '.', 2);
+                    bConnected = true;
+                    ConnectNotify("成功连接到" + EntryName + '.', 2);
                 }
             }
         }
@@ -402,7 +402,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = this.GetErrorString(nErrorValue);
+            strError = GetErrorString(nErrorValue);
             return false;
         }
 
@@ -444,7 +444,7 @@ namespace SuperNetwork
             int nErrorValue = RasSetEntryDialParams(null, ref structure, !bRememberPassword);
             if (nErrorValue != 0)
             {
-                strError = this.GetErrorString(nErrorValue);
+                strError = GetErrorString(nErrorValue);
                 return false;
             }
             strError = null;
@@ -462,50 +462,50 @@ namespace SuperNetwork
             int lpcb = 0;
             int lpcConnections = 0;
             structure.dwSize = Marshal.SizeOf(structure);
-            int nErrorValue = RasEnumConnections(this.Rasconn, ref lpcb, ref lpcConnections);
+            int nErrorValue = RasEnumConnections(Rasconn, ref lpcb, ref lpcConnections);
             switch (nErrorValue)
             {
                 case 0:
                     break;
 
                 case 0x25b:
-                    this.Rasconn = new RASCONN[lpcConnections];
-                    lpcb = this.Rasconn[0].dwSize = Marshal.SizeOf(this.Rasconn[0]);
-                    nErrorValue = RasEnumConnections(this.Rasconn, ref lpcb, ref lpcConnections);
+                    Rasconn = new RASCONN[lpcConnections];
+                    lpcb = Rasconn[0].dwSize = Marshal.SizeOf(Rasconn[0]);
+                    nErrorValue = RasEnumConnections(Rasconn, ref lpcb, ref lpcConnections);
                     break;
 
                 default:
-                    this.ConnectNotify(this.GetErrorString(nErrorValue), 3);
+                    ConnectNotify(GetErrorString(nErrorValue), 3);
                     return;
             }
             if (nErrorValue != 0)
             {
-                this.ConnectNotify(this.GetErrorString(nErrorValue), 3);
+                ConnectNotify(GetErrorString(nErrorValue), 3);
             }
-            else if ((lpcConnections < 1) && this.bConnected)
+            else if ((lpcConnections < 1) && bConnected)
             {
-                this.bConnected = false;
-                this.ConnectNotify("连接中断.", 0);
+                bConnected = false;
+                ConnectNotify("连接中断.", 0);
             }
             else
             {
                 for (int i = 0; i < lpcConnections; i++)
                 {
-                    nErrorValue = RasGetConnectStatus(this.Rasconn[i].hrasconn, ref structure);
+                    nErrorValue = RasGetConnectStatus(Rasconn[i].hrasconn, ref structure);
                     if (nErrorValue != 0)
                     {
-                        this.ConnectNotify(this.GetErrorString(nErrorValue), 3);
+                        ConnectNotify(GetErrorString(nErrorValue), 3);
                         return;
                     }
-                    if ((structure.rasconnstate == RASCONNSTATE.RASCS_Connected) && !this.bConnected)
+                    if ((structure.rasconnstate == RASCONNSTATE.RASCS_Connected) && !bConnected)
                     {
-                        this.bConnected = true;
-                        this.ConnectNotify("成功连接到" + this.Rasconn[i].szEntryName + '.', 2);
+                        bConnected = true;
+                        ConnectNotify("成功连接到" + Rasconn[i].szEntryName + '.', 2);
                     }
-                    if ((structure.rasconnstate == RASCONNSTATE.RASCS_Disconnected) && this.bConnected)
+                    if ((structure.rasconnstate == RASCONNSTATE.RASCS_Disconnected) && bConnected)
                     {
-                        this.bConnected = false;
-                        this.ConnectNotify("连接中断.", 0);
+                        bConnected = false;
+                        ConnectNotify("连接中断.", 0);
                     }
                 }
             }
@@ -637,7 +637,7 @@ namespace SuperNetwork
         private struct RASCONNSTATUS
         {
             internal int dwSize;
-            internal AdslHelper.RASCONNSTATE rasconnstate;
+            internal RASCONNSTATE rasconnstate;
             internal int dwError;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x11)]
             internal string szDeviceType;
@@ -651,7 +651,7 @@ namespace SuperNetwork
         /// <param name="unMsg">显示</param>
         /// <param name="rasconnstate"></param>
         /// <param name="dwError">错误</param>
-        private delegate void RasDialEvent(uint unMsg, AdslHelper.RASCONNSTATE rasconnstate, int dwError);
+        private delegate void RasDialEvent(uint unMsg, RASCONNSTATE rasconnstate, int dwError);
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private struct RASDIALPARAMS

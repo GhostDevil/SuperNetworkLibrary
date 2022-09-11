@@ -9,7 +9,7 @@ namespace SuperNetwork.SuperNetwork
     {
         private static bool IsConnectionSuccessful = false;
         private static Exception socketexception;
-        private static ManualResetEvent TimeoutObject = new ManualResetEvent(false);
+        private static readonly ManualResetEvent TimeoutObject = new ManualResetEvent(false);
 
         public static bool Connect(IPEndPoint remoteEndPoint, int timeoutMSec)
         {

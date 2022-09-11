@@ -20,11 +20,11 @@ namespace SuperNetwork.XJSocket
         #endregion
 
         bool IsStop = false;
-        object obj = new object();
+        readonly object obj = new object();
         /// <summary>
         /// 信号量
         /// </summary>
-        private Semaphore semap = new Semaphore(5, 5000);
+        private readonly Semaphore semap = new Semaphore(5, 5000);
         /// <summary>
         /// 客户端队列集合
         /// </summary>
@@ -40,7 +40,7 @@ namespace SuperNetwork.XJSocket
         /// <summary>
         /// 欢迎消息
         /// </summary>
-        private string boundary = "bbs.msdn5.com";
+        private readonly string boundary = "bbs.msdn5.com";
         /// <summary>
         /// 当前监听端口
         /// </summary>

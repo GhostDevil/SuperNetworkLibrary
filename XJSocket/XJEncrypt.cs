@@ -9,9 +9,9 @@ namespace SuperNetwork.XJSocket
     /// </summary>
     public class XJEncrypt
     {
-        private byte[] iba_mIV = new byte[8];  //向量
-        private byte[] iba_mKey = new byte[8]; //密钥
-        private DESCryptoServiceProvider io_DES = new DESCryptoServiceProvider();
+        private readonly byte[] iba_mIV = new byte[8];  //向量
+        private readonly byte[] iba_mKey = new byte[8]; //密钥
+        private readonly DESCryptoServiceProvider io_DES = new DESCryptoServiceProvider();
 
         public XJEncrypt()
         {

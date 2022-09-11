@@ -38,7 +38,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
     /// 作 者:不良帥
     /// 描 述:TcpClient同步通讯客户端
     /// </summary>
-    public class TCPSyncClient
+    public class TCPClient
     {
         /// <summary>
         /// 掉线重连timer
@@ -51,15 +51,15 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 心跳数据
         /// </summary>
-        private string HeardbeatData = "";
+        private readonly string HeardbeatData = "";
         /// <summary>
         /// 缓冲区大小
         /// </summary>
-        private long BufferSize = 1024 * 1024;
+        private readonly long BufferSize = 1024 * 1024;
         /// <summary>
         /// 是否自动检查状态并重连
         /// </summary>
-        private bool ISCheckStatus;
+        private readonly bool ISCheckStatus;
 
         #region  构造函数 
         /// <summary>
@@ -71,7 +71,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="isCheckStatus">是否自动检查状态并重连</param>
         /// <param name="checkInterval">自动检测时间间隔</param>
         /// <param name="heartbeatData">心跳内容</param>
-        public TCPSyncClient(string ip, int port, long bufferSize = 1024,bool isCheckStatus=true,int checkInterval = 3000, string heartbeatData = "#Chenck&&state!#")
+        public TCPClient(string ip, int port, long bufferSize = 1024,bool isCheckStatus=true,int checkInterval = 3000, string heartbeatData = "#Chenck&&state!#")
         {
             if (isCheckStatus)
             {
@@ -152,7 +152,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 当前连接状态
         /// </summary>
-        public TCPSyncSocketEnum.SocketState socketState { get; set; }
+        public TCPSocketEnum.SocketState socketState { get; set; }
         #endregion
 
         #region  启动连接Socket连接 
@@ -212,22 +212,22 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                             if (ReConectedCount != 0)
                             {
                                 //返回状态信息
-                                socketState = TCPSyncSocketEnum.SocketState.Reconnection;
-                                OnStateInfo?.Invoke(string.Format("正在第 {0} 次重新连接服务器 {1} ... ...", ReConectedCount, ServerIp), TCPSyncSocketEnum.SocketState.Reconnection);
+                                socketState = TCPSocketEnum.SocketState.Reconnection;
+                                OnStateInfo?.Invoke(string.Format("正在第 {0} 次重新连接服务器 {1} ... ...", ReConectedCount, ServerIp), TCPSocketEnum.SocketState.Reconnection);
                             }
                             else
                             {
-                                socketState = TCPSyncSocketEnum.SocketState.Connecting;
+                                socketState = TCPSocketEnum.SocketState.Connecting;
                                 //返回状态信息
-                                OnStateInfo?.Invoke(string.Format("正在连接服务器 {0} ... ...", ServerIp), TCPSyncSocketEnum.SocketState.Connecting);
+                                OnStateInfo?.Invoke(string.Format("正在连接服务器 {0} ... ...", ServerIp), TCPSocketEnum.SocketState.Connecting);
                             }
                             if(ServerIp!="")
                                 Tcpclient.Connect(IPAddress.Parse(ServerIp), ServerPort);
                             else
                                 Tcpclient.Connect(IPAddress.Any, ServerPort);
 
-                            socketState = TCPSyncSocketEnum.SocketState.Connected;
-                            OnStateInfo?.Invoke(string.Format("已成功连接服务器 {0} !!!", ServerIp), TCPSyncSocketEnum.SocketState.Connected);
+                            socketState = TCPSocketEnum.SocketState.Connected;
+                            OnStateInfo?.Invoke(string.Format("已成功连接服务器 {0} !!!", ServerIp), TCPSocketEnum.SocketState.Connected);
                             ReConectedCount = 1;
                             if (CheckState != null)
                                 CheckState.Start();
@@ -253,9 +253,9 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                     // 连接断开
                     if (bytelen == 0)
                     {
-                        socketState = TCPSyncSocketEnum.SocketState.Disconnect;
+                        socketState = TCPSocketEnum.SocketState.Disconnect;
                         //返回状态信息
-                        OnStateInfo?.Invoke(string.Format("与服务器 {0} 断开连接!!!", ServerIp), TCPSyncSocketEnum.SocketState.Disconnect);
+                        OnStateInfo?.Invoke(string.Format("与服务器 {0} 断开连接!!!", ServerIp), TCPSocketEnum.SocketState.Disconnect);
                         if (CheckState!=null)
                             CheckState.Stop();
                         // 异常退出、强制重新连接
@@ -351,7 +351,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                     IsClosed = false;
                     ReConectedCount = 0;
                     IsStartTcpthreading = false;
-                    OnStateInfo?.Invoke(string.Format("与服务器 {0} 断开连接!!!", ServerIp), TCPSyncSocketEnum.SocketState.Disconnect);
+                    OnStateInfo?.Invoke(string.Format("与服务器 {0} 断开连接!!!", ServerIp), TCPSocketEnum.SocketState.Disconnect);
                 }
                 //标示线程已关闭可以重新连接
                 return true;
@@ -432,7 +432,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 接收Byte数据事件
         /// </summary>
-        public event TCPDelegate.ReceviceByteEventHandler OnReceviceByte;
+        public event TCPDelegate.RevoiceByteEventHandler OnReceviceByte;
         #endregion
 
         #region OnExceptionMsg返回异常消息事件

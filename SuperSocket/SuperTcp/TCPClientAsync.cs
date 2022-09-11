@@ -12,7 +12,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
     /// 作 者:不良帥
     /// 描 述:异步TCP客户端
     /// </summary>
-    public class TCPAsyncClient : IDisposable
+    public class TCPClientAsync : IDisposable
     {
         #region Fields
 
@@ -28,7 +28,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 异步TCP客户端
         /// </summary>
         /// <param name="remoteEP">远端服务器终结点</param>
-        public TCPAsyncClient(IPEndPoint remoteEP)
+        public TCPClientAsync(IPEndPoint remoteEP)
           : this(new[] { remoteEP.Address }, remoteEP.Port)
         {
         }
@@ -38,7 +38,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="remoteEP">远端服务器终结点</param>
         /// <param name="localEP">本地客户端终结点</param>
-        public TCPAsyncClient(IPEndPoint remoteEP, IPEndPoint localEP)
+        public TCPClientAsync(IPEndPoint remoteEP, IPEndPoint localEP)
           : this(new[] { remoteEP.Address }, remoteEP.Port, localEP)
         {
         }
@@ -48,7 +48,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="remoteIPAddress">远端服务器IP地址</param>
         /// <param name="remotePort">远端服务器端口</param>
-        public TCPAsyncClient(IPAddress remoteIPAddress, int remotePort)
+        public TCPClientAsync(IPAddress remoteIPAddress, int remotePort)
           : this(new[] { remoteIPAddress }, remotePort)
         {
         }
@@ -59,7 +59,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="remoteIPAddress">远端服务器IP地址</param>
         /// <param name="remotePort">远端服务器端口</param>
         /// <param name="localEP">本地客户端终结点</param>
-        public TCPAsyncClient(
+        public TCPClientAsync(
           IPAddress remoteIPAddress, int remotePort, IPEndPoint localEP)
           : this(new[] { remoteIPAddress }, remotePort, localEP)
         {
@@ -70,7 +70,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="remoteHostName">远端服务器主机名</param>
         /// <param name="remotePort">远端服务器端口</param>
-        public TCPAsyncClient(string remoteHostName, int remotePort)
+        public TCPClientAsync(string remoteHostName, int remotePort)
           : this(Dns.GetHostAddresses(remoteHostName), remotePort)
         {
         }
@@ -81,7 +81,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="remoteHostName">远端服务器主机名</param>
         /// <param name="remotePort">远端服务器端口</param>
         /// <param name="localEP">本地客户端终结点</param>
-        public TCPAsyncClient(
+        public TCPClientAsync(
           string remoteHostName, int remotePort, IPEndPoint localEP)
           : this(Dns.GetHostAddresses(remoteHostName), remotePort, localEP)
         {
@@ -92,7 +92,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="remoteIPAddresses">远端服务器IP地址列表</param>
         /// <param name="remotePort">远端服务器端口</param>
-        public TCPAsyncClient(IPAddress[] remoteIPAddresses, int remotePort)
+        public TCPClientAsync(IPAddress[] remoteIPAddresses, int remotePort)
           : this(remoteIPAddresses, remotePort, null)
         {
         }
@@ -103,21 +103,21 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="remoteIPAddresses">远端服务器IP地址列表</param>
         /// <param name="remotePort">远端服务器端口</param>
         /// <param name="localEP">本地客户端终结点</param>
-        public TCPAsyncClient(
+        public TCPClientAsync(
           IPAddress[] remoteIPAddresses, int remotePort, IPEndPoint localEP)
         {
-            this.Addresses = remoteIPAddresses;
-            this.Port = remotePort;
-            this.LocalIPEndPoint = localEP;
-            this.Encoding = Encoding.Default;
+            Addresses = remoteIPAddresses;
+            Port = remotePort;
+            LocalIPEndPoint = localEP;
+            Encoding = Encoding.Default;
 
-            if (this.LocalIPEndPoint != null)
+            if (LocalIPEndPoint != null)
             {
-                this.tcpClient = new TcpClient(this.LocalIPEndPoint);
+                tcpClient = new TcpClient(LocalIPEndPoint);
             }
             else
             {
-                this.tcpClient = new TcpClient();
+                tcpClient = new TcpClient();
             }
 
             Retries = 3;
@@ -172,7 +172,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 异步连接到服务器
         /// </summary>
         /// <returns>异步TCP客户端</returns>
-        public TCPAsyncClient Connect()
+        public TCPClientAsync Connect()
         {
             if (!Connected)
             {
@@ -187,7 +187,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 关闭与服务器的连接
         /// </summary>
         /// <returns>异步TCP客户端</returns>
-        public TCPAsyncClient Close()
+        public TCPClientAsync Close()
         {
             if (Connected)
             {
@@ -287,14 +287,12 @@ namespace SuperNetwork.SuperSocket.SuperTcp
 
         private void RaiseDatagramReceived(TcpClient sender, byte[] datagram)
         {
-            if (DatagramReceived != null)
-                DatagramReceived(this,new TcpDatagramReceivedEventArgs<byte[]>(sender, datagram));
+            DatagramReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<byte[]>(sender, datagram));
         }
 
         private void RaisePlaintextReceived(TcpClient sender, byte[] datagram)
         {
-            if (PlaintextReceived != null)
-                PlaintextReceived(this, new TcpDatagramReceivedEventArgs<string>(sender, this.Encoding.GetString(datagram, 0, datagram.Length)));
+            PlaintextReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<string>(sender, Encoding.GetString(datagram, 0, datagram.Length)));
         }
 
         /// <summary>
@@ -312,20 +310,17 @@ namespace SuperNetwork.SuperSocket.SuperTcp
 
         private void RaiseServerConnected(IPAddress[] ipAddresses, int port)
         {
-            if (ServerConnected != null)
-                ServerConnected(this, new TcpServerConnectedEventArgs(ipAddresses, port));
+            ServerConnected?.Invoke(this, new TcpServerConnectedEventArgs(ipAddresses, port));
         }
 
         private void RaiseServerDisconnected(IPAddress[] ipAddresses, int port)
         {
-            if (ServerDisconnected != null)
-                ServerDisconnected(this,new TcpServerDisconnectedEventArgs(ipAddresses, port));
+            ServerDisconnected?.Invoke(this, new TcpServerDisconnectedEventArgs(ipAddresses, port));
         }
 
         private void RaiseServerExceptionOccurred(IPAddress[] ipAddresses, int port, Exception innerException)
         {
-            if (ServerExceptionOccurred != null)
-                ServerExceptionOccurred(this, new TcpServerExceptionOccurredEventArgs(ipAddresses, port, innerException));
+            ServerExceptionOccurred?.Invoke(this, new TcpServerExceptionOccurredEventArgs(ipAddresses, port, innerException));
         }
 
         #endregion
@@ -363,7 +358,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="datagram">报文</param>
         public void Send(string datagram)
         {
-            Send(this.Encoding.GetBytes(datagram));
+            Send(Encoding.GetBytes(datagram));
         }
 
         #endregion
@@ -385,7 +380,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="disposing">true：释放托管和非托管资源；false：只释放非托管资源。</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!this.disposed)
+            if (!disposed)
             {
                 if (disposing)
                 {
@@ -411,45 +406,6 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         #endregion
     }
 
-
-
-    /// <summary>
-    /// TCP客户端状态
-    /// </summary>
-    internal class TcpClientState
-    {
-        /// <summary>
-        /// 构造新客户端
-        /// </summary>
-        /// <param name="tcpClient">TCP客户端</param>
-        /// <param name="buffer">字节数组缓冲区</param>
-        public TcpClientState(TcpClient tcpClient, byte[] buffer)
-        {
-            this.TcpClient = tcpClient ?? throw new ArgumentNullException("tcpClient");
-            this.Buffer = buffer ?? throw new ArgumentNullException("buffer");
-        }
-
-        /// <summary>
-        /// TCP客户端
-        /// </summary>
-        public TcpClient TcpClient { get; private set; }
-
-        /// <summary>
-        /// 缓冲区
-        /// </summary>
-        public byte[] Buffer { get; private set; }
-
-        /// <summary>
-        /// 获取网络流
-        /// </summary>
-        public NetworkStream NetworkStream
-        {
-            get { return TcpClient.GetStream(); }
-        }
-    }
-
-    
-
     /// <summary>
     /// 与服务器的连接发生异常事件参数
     /// </summary>
@@ -464,9 +420,9 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         public TcpServerExceptionOccurredEventArgs(
           IPAddress[] ipAddresses, int port, Exception innerException)
         {
-            this.Addresses = ipAddresses ?? throw new ArgumentNullException("ipAddresses");
-            this.Port = port;
-            this.Exception = innerException;
+            Addresses = ipAddresses ?? throw new ArgumentNullException("ipAddresses");
+            Port = port;
+            Exception = innerException;
         }
 
         /// <summary>
@@ -546,8 +502,8 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             if (ipAddresses == null)
                 throw new ArgumentNullException("ipAddresses");
 
-            this.Addresses = ipAddresses;
-            this.Port = port;
+            Addresses = ipAddresses;
+            Port = port;
         }
 
         /// <summary>
@@ -595,8 +551,8 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             if (ipAddresses == null)
                 throw new ArgumentNullException("ipAddresses");
 
-            this.Addresses = ipAddresses;
-            this.Port = port;
+            Addresses = ipAddresses;
+            Port = port;
         }
 
         /// <summary>

@@ -5,11 +5,11 @@
     /// </summary>
     internal class TxStateCode
     {
-        private byte _state = 0;//状态码
-        private byte[] _dateByte = null;//字节数据
-        private string _datestring = null;//文本数据
-        private int _sendDateLabel = 0;//发送数据的标签
-        private byte[] _replyDate = null;//直接回复的数据
+        private readonly byte _state = 0;//状态码
+        private readonly byte[] _dateByte = null;//字节数据
+        private readonly string _datestring = null;//文本数据
+        private readonly int _sendDateLabel = 0;//发送数据的标签
+        private readonly byte[] _replyDate = null;//直接回复的数据
         /// <summary>
         /// 直接回复的数据
         /// </summary>

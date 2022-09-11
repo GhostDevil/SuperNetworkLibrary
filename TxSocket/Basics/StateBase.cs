@@ -10,7 +10,7 @@ namespace SuperNetwork.TxSocket.Basics
     {
        private Socket _workSocket = null;//工作的socket
        private IPEndPoint ipEndPoint = null;
-       private int _bufferSize = 1024;//缓冲区大小
+       private readonly int _bufferSize = 1024;//缓冲区大小
        private byte[] _buffer = null;//缓冲区
        private byte[] _sendDate = null;//已发送的数据
        private int _sendDateLabel = 0;//发送数据的标签

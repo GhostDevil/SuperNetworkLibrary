@@ -78,54 +78,13 @@ namespace SuperNetwork.XJSocket
             InitSocket(Ipaddress, Port);
             Connect();
         }
-        public void SendData(string SendData)
+        public void SendData(string sendData)
         {
-            try
-            {
-                //如果连接则发送
-                if (client != null)
-                {
-                    if (client.Connected)
-                    {
-                        if (nStream == null)
-                        {
-                            nStream = client.GetStream();
-                        }
-                        byte[] buffer = Encoding.UTF8.GetBytes(SendData);
-                        nStream.Write(buffer, 0, buffer.Length);
+            byte[] buffer = Encoding.UTF8.GetBytes(sendData);
+            SendData(buffer);
 
-                    }
-                    else
-                    {
-                        Sockets sks = new Sockets();
-                        sks.ErrorCode = Sockets.ErrorCodes.TrySendData;
-                        sks.ex = new Exception("客户端发送时无连接,开始进行重连上端..");
-                        sks.ClientDispose = true;
-                        pushSockets.Invoke(sks);//推送至UI
-                        RestartInit();
-                    }
-                }
-                else
-                {
-                    Sockets sks = new Sockets();
-                    sks.ErrorCode = Sockets.ErrorCodes.TrySendData;
-                    sks.ex = new Exception("客户端对象为null,开始重连上端..");
-                    sks.ClientDispose = true;
-                    pushSockets.Invoke(sks);//推送至UI 
-                    RestartInit();
-                }
-            }
-            catch (Exception skex)
-            {
-                Sockets sks = new Sockets();
-                sks.ErrorCode = Sockets.ErrorCodes.TrySendData;
-                sks.ex = new Exception("客户端出现异常,开始重连上端..异常信息:" + skex.Message);
-                sks.ClientDispose = true;
-                pushSockets.Invoke(sks);//推送至UI
-                RestartInit();
-            }
         }
-        public void SendData(byte[] SendData)
+        public void SendData(byte[] sendData)
         {
             try
             {
@@ -138,7 +97,7 @@ namespace SuperNetwork.XJSocket
                         {
                             nStream = client.GetStream();
                         }
-                        byte[] buffer = SendData;
+                        byte[] buffer = sendData;
                         nStream.Write(buffer, 0, buffer.Length);
 
                     }
@@ -173,26 +132,28 @@ namespace SuperNetwork.XJSocket
         }
 
         private void Connect()
-        {
+        { 
+            //推送连接成功.
+            Sockets sks = new Sockets();
             try
             {
                 client.Connect(ip);
                 nStream = new NetworkStream(client.Client, true);
                 sk = new Sockets(ip, client, nStream);
                 sk.nStream.BeginRead(sk.RecBuffer, 0, sk.RecBuffer.Length, new AsyncCallback(EndReader), sk);
-                //推送连接成功.
-                Sockets sks = new Sockets();
                 sks.ErrorCode = Sockets.ErrorCodes.ConnectSuccess;
                 sks.ex = new Exception("客户端连接成功.");
                 sks.ClientDispose = false;
-                pushSockets.Invoke(sks);
             }
             catch (Exception skex)
             {
-                Sockets sks = new Sockets();
                 sks.ErrorCode = Sockets.ErrorCodes.ConnectError;
                 sks.ex = new Exception("客户端连接失败..异常信息:" + skex.Message);
                 sks.ClientDispose = true;
+
+            }
+            finally
+            {
                 pushSockets.Invoke(sks);
             }
 

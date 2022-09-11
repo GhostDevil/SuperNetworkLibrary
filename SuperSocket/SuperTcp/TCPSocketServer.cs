@@ -41,7 +41,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
     /// 作 者:不良帥
     /// 描 述:Socket_TcpServer同步通讯服务端实现网络通讯
     /// </summary>
-    public class TCPSyncSocketServer
+    public class TCPSocketServer
     {
         #region  变量属性 
         /// <summary>
@@ -51,7 +51,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 监听线程
         /// </summary>
-        public Thread StartSockst;
+        public Thread StartSocks;
         /// <summary>
         /// 本机监听IP
         /// </summary>
@@ -59,7 +59,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 监听端口
         /// </summary>
-        public int ServerPort = 5100;
+        public readonly int ServerPort = 5100;
         /// <summary>
         /// 是否已启动监听
         /// </summary>
@@ -67,23 +67,23 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 是否发送心跳包
         /// </summary>
-        private bool IsSendHeartbeat;
+        private readonly bool IsSendHeartbeat;
         /// <summary>
         /// 心跳数据
         /// </summary>
-        private string HeardbeatData = "";
+        private readonly string HeardbeatData = "";
         /// <summary>
         /// 缓冲区大小
         /// </summary>
-        private long BufferSize = 1024 * 1024;
+        private readonly long BufferSize = 1024 * 1024;
         /// <summary>
         /// 支持的挂起队列长度
         /// </summary>
-        private int BackLog = 1000;
+        private readonly int BackLog = 1000;
         /// <summary>
         /// 客户端列表
         /// </summary>
-        public List<Socket> ClientSocketList = new List<Socket>();
+        public readonly List<Socket> ClientSocketList = new List<Socket>();
         #endregion
 
         #region  构造函数 
@@ -97,7 +97,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="isSendHeartbeat">是否发送心跳</param>
         /// <param name="heartbeatData">心跳内容</param>
         /// <remarks>localIp自动检测可用于一块网卡的PC</remarks>
-        public TCPSyncSocketServer(int port, string localIp = "", long bufferSize = 1024 * 1024, int backLog = 1000, bool isSendHeartbeat = false, string heartbeatData = "#Chenck&&state！#")
+        public TCPSocketServer(int port, string localIp = "", long bufferSize = 1024 * 1024, int backLog = 1000, bool isSendHeartbeat = false, string heartbeatData = "#Chenck&&state！#")
         {
             //ServerIp = ip;
             ServerIp = localIp;
@@ -123,8 +123,8 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                 if (IsStartListening)
                     return;
                 //启动线程打开监听
-                StartSockst = new Thread(new ThreadStart(StartSocketListening));
-                StartSockst.Start();
+                StartSocks = new Thread(new ThreadStart(StartSocketListening));
+                StartSocks.Start();
             }
             catch (SocketException ex)
             {
@@ -144,17 +144,13 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             try
             {
                 IsStartListening = false;
-                StartSockst.Interrupt();
+                StartSocks.Interrupt();
                 //StartSockst.Abort();
                 ServerSocket.Close();
-                //if(OnStateInfo!=null)
-                //    OnStateInfo(string.Format("服务端 Ip：{0} 端口：{1} 已停止监听!!!", ServerIp, ServerPort),TCPSyncSocketEnum.SocketState.StopListening);
-                OnStateInfo?.Invoke(string.Format("服务端 Ip：{0} 端口：{1} 已停止监听!!!", ServerIp, ServerPort), TCPSyncSocketEnum.SocketState.StopListening);
+                OnStateInfo?.Invoke(string.Format("服务端 Ip：{0} 端口：{1} 已停止监听!!!", ServerIp, ServerPort), TCPSocketEnum.SocketState.StopListening);
                 for (int i = 0; i < ClientSocketList.Count; i++)
                 {
-                    //if(OnStateInfo != null)
-                    //    OnStateInfo(string.Format("客户端 IP：{0} 端口：{1} 已关闭其连接!!!", ((IPEndPoint)ClientSocketList[i].RemoteEndPoint).Address.ToString(), ((IPEndPoint)ClientSocketList[i].RemoteEndPoint).Port.ToString()), TCPSyncSocketEnum.SocketState.Disconnect);
-                    OnStateInfo?.Invoke(string.Format("客户端 IP：{0} 端口：{1} 已关闭其连接!!!", ((IPEndPoint)ClientSocketList[i].RemoteEndPoint).Address.ToString(), ((IPEndPoint)ClientSocketList[i].RemoteEndPoint).Port.ToString()), TCPSyncSocketEnum.SocketState.Disconnect);
+                      OnStateInfo?.Invoke(string.Format("客户端 IP：{0} 端口：{1} 已关闭其连接!!!", ((IPEndPoint)ClientSocketList[i].RemoteEndPoint).Address.ToString(), ((IPEndPoint)ClientSocketList[i].RemoteEndPoint).Port.ToString()), TCPSocketEnum.SocketState.Disconnect);
                     ClientSocketList[i].Shutdown(SocketShutdown.Both);
 
                 }
@@ -163,8 +159,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             }
             catch (SocketException ex)
             {
-                //if (OnExceptionMsg != null)
-                //    OnExceptionMsg(ex.Message);
+             
                 OnExceptionMsg?.Invoke("异常消息：" + ex.Message);
             }
         }
@@ -192,7 +187,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
 
                 while (IsStartListening)
                 {
-                    OnStateInfo?.Invoke(string.Format("服务端 Ip：{0} 端口：{1} 已启动监听... ...", ServerIp == "" ? "0.0.0.0" : ServerIp, ServerPort), TCPSyncSocketEnum.SocketState.StartListening);
+                    OnStateInfo?.Invoke(string.Format("服务端 Ip：{0} 端口：{1} 已启动监听... ...", ServerIp == "" ? "0.0.0.0" : ServerIp, ServerPort), TCPSocketEnum.SocketState.StartListening);
                     //阻塞挂起直至有客户端连接
                     Socket clientSocket = ServerSocket.Accept();
                     try
@@ -202,22 +197,14 @@ namespace SuperNetwork.SuperSocket.SuperTcp
                         ClientSocketList.Add(clientSocket);
                         string ip = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
                         string port = ((IPEndPoint)clientSocket.RemoteEndPoint).Port.ToString();
-                        //if (OnStateInfo != null)
-                        //    OnStateInfo(string.Format("客户端 Ip：{0} 端口：{1} 上线！！！", ip, port), TCPSyncSocketEnum.SocketState.ClientOnline);
-                        OnStateInfo?.Invoke(string.Format("客户端 Ip：{0} 端口：{1} 上线！！！", ip, port), TCPSyncSocketEnum.SocketState.ClientOnline);
-                        //if(OnOnlineClient!=null)
-                        //    OnOnlineClient(clientSocket);
+                        OnStateInfo?.Invoke(string.Format("客户端 Ip：{0} 端口：{1} 上线！！！", ip, port), TCPSocketEnum.SocketState.ClientOnline);
                         OnOnlineClient?.Invoke(clientSocket);
-                        //if (OnReturnClientCount != null)
-                        //    OnReturnClientCount(ClientSocketList.Count);
                         OnReturnClientCount?.Invoke(ClientSocketList.Count);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ClientSocketCallBack), clientSocket);
                     }
                     catch (Exception ex)
                     {
                         clientSocket.Shutdown(SocketShutdown.Both);
-                        //if (OnExceptionMsg != null)
-                        //    OnExceptionMsg(ex.Message);
                         OnExceptionMsg?.Invoke("异常消息：" + ex.Message);
                         ClientSocketList.Remove(clientSocket);
                         //TcpDelegateHelper.TcpServerErrorMsg("网络通讯异常，异常原因：" + ex.Message);
@@ -228,8 +215,6 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             catch (Exception ex)
             {
                 //其他错误原因
-                //if (OnExceptionMsg != null)
-                //    OnExceptionMsg(ex.Message);
                 OnExceptionMsg?.Invoke("异常消息：" + ex.Message);
             }
         }
@@ -285,7 +270,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             string ip = ((IPEndPoint)temp.RemoteEndPoint).Address.ToString();
             string port = ((IPEndPoint)temp.RemoteEndPoint).Port.ToString();
 
-            OnStateInfo?.Invoke(string.Format("客户端 Ip：{0} 端口：{1} 下线...", ip, port), TCPSyncSocketEnum.SocketState.ClientOnOff);
+            OnStateInfo?.Invoke(string.Format("客户端 Ip：{0} 端口：{1} 下线...", ip, port), TCPSocketEnum.SocketState.ClientOnOff);
 
             OnOfflineClient?.Invoke(temp);
 
@@ -296,8 +281,6 @@ namespace SuperNetwork.SuperSocket.SuperTcp
             }
             catch (SocketException ex)
             {
-                //if (OnExceptionMsg != null)
-                //    OnExceptionMsg(ex.Message);
                 OnExceptionMsg?.Invoke("异常消息：" + ex.Message);
             }
         }
@@ -457,7 +440,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <summary>
         /// 接收数据事件
         /// </summary>
-        public event TCPDelegate.ReceviceByteEventHandler OnReceviceByte;
+        public event TCPDelegate.RevoiceByteEventHandler OnReceviceByte;
         #endregion
 
         #region OnErrorMsg返回错误消息事件

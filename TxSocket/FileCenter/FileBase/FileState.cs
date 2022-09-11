@@ -5,8 +5,8 @@ namespace SuperNetwork.TxSocket.FileCenter
 {
     internal class FileState
     {
-        private int _fileLabel = 0;//文件的标签
-        private long _fileLenth = 0;//文件总长度
+        private readonly int _fileLabel = 0;//文件的标签
+        private readonly long _fileLenth = 0;//文件总长度
         private long _fileOkLenth = 0;//已处理的数据量
         private string _fileName = "";//文件地址
         private int _stateFile = 0;//文件状态

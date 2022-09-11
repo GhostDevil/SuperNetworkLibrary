@@ -13,12 +13,12 @@ namespace SuperNetwork.SuperSocket.SuperTcp
     /// 作 者:不良帥
     /// 描 述:异步TCP服务器
     /// </summary>
-    public class TCPAsyncListen : IDisposable
+    public class TCPListenAsync : IDisposable
     {
         #region Fields
 
         private TcpListener _listener;
-        private ConcurrentDictionary<string, TcpClientState> _clients;
+        private readonly ConcurrentDictionary<string, TcpClientState> _clients;
         private bool _disposed = false;
 
         #endregion
@@ -29,7 +29,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 异步TCP服务器
         /// </summary>
         /// <param name="listenPort">监听的端口</param>
-        public TCPAsyncListen(int listenPort)
+        public TCPListenAsync(int listenPort)
           : this(IPAddress.Any, listenPort)
         {
         }
@@ -38,7 +38,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 异步TCP服务器
         /// </summary>
         /// <param name="localEP">监听的终结点</param>
-        public TCPAsyncListen(IPEndPoint localEP)
+        public TCPListenAsync(IPEndPoint localEP)
           : this(localEP.Address, localEP.Port)
         {
         }
@@ -48,7 +48,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="localIPAddress">监听的IP地址</param>
         /// <param name="listenPort">监听的端口</param>
-        public TCPAsyncListen(IPAddress localIPAddress, int listenPort)
+        public TCPListenAsync(IPAddress localIPAddress, int listenPort)
         {
             Address = localIPAddress;
             Port = listenPort;
@@ -89,7 +89,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 启动服务器，支持10个挂起请求队列。
         /// </summary>
         /// <returns>异步TCP服务器</returns>
-        public TCPAsyncListen Start()
+        public TCPListenAsync Start()
         {
             return Start(10);
         }
@@ -99,7 +99,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="backlog">服务器所允许的挂起连接序列的最大长度</param>
         /// <returns>异步TCP服务器</returns>
-        public TCPAsyncListen Start(int backlog)
+        public TCPListenAsync Start(int backlog)
         {
             if (IsRunning) return this;
 
@@ -115,7 +115,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// 停止服务器
         /// </summary>
         /// <returns>异步TCP服务器</returns>
-        public TCPAsyncListen Stop()
+        public TCPListenAsync Stop()
         {
             if (!IsRunning) return this;
 
@@ -264,18 +264,12 @@ namespace SuperNetwork.SuperSocket.SuperTcp
 
         private void RaiseDatagramReceived(TcpClient sender, byte[] datagram)
         {
-            if (DatagramReceived != null)
-            {
-                DatagramReceived(this, new TcpDatagramReceivedEventArgs<byte[]>(sender, datagram));
-            }
+            DatagramReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<byte[]>(sender, datagram));
         }
 
         private void RaisePlaintextReceived(TcpClient sender, byte[] datagram)
         {
-            if (PlaintextReceived != null)
-            {
-                PlaintextReceived(this, new TcpDatagramReceivedEventArgs<string>(sender, Encoding.GetString(datagram, 0, datagram.Length)));
-            }
+            PlaintextReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<string>(sender, Encoding.GetString(datagram, 0, datagram.Length)));
         }
 
         /// <summary>
@@ -294,25 +288,16 @@ namespace SuperNetwork.SuperSocket.SuperTcp
 
         private void RaiseClientConnected(TcpClient tcpClient)
         {
-            if (ClientConnected != null)
-            {
-                ClientConnected(this, new TcpClientConnectedEventArgs(tcpClient));
-            }
+            ClientConnected?.Invoke(this, new TcpClientConnectedEventArgs(tcpClient));
         }
 
         private void RaiseClientDisconnected(TcpClient tcpClient)
         {
-            if (ClientDisconnected != null)
-            {
-                ClientDisconnected(this, new TcpClientDisconnectedEventArgs(tcpClient));
-            }
+            ClientDisconnected?.Invoke(this, new TcpClientDisconnectedEventArgs(tcpClient));
         }
         private void RaiseTcpException(Exception ex)
         {
-            if (TcpException != null)
-            {
-                TcpException(this, new TcpExceptionEventArgs(ex));
-            }
+            TcpException?.Invoke(this, new TcpExceptionEventArgs(ex));
         }
         #endregion
 
@@ -515,6 +500,41 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         }
 
         #endregion
+
+        /// <summary>
+        /// TCP客户端状态
+        /// </summary>
+        internal class TcpClientState
+        {
+            /// <summary>
+            /// 构造新客户端
+            /// </summary>
+            /// <param name="tcpClient">TCP客户端</param>
+            /// <param name="buffer">字节数组缓冲区</param>
+            public TcpClientState(TcpClient tcpClient, byte[] buffer)
+            {
+                TcpClient = tcpClient ?? throw new ArgumentNullException("tcpClient");
+                Buffer = buffer ?? throw new ArgumentNullException("buffer");
+            }
+
+            /// <summary>
+            /// TCP客户端
+            /// </summary>
+            public TcpClient TcpClient { get; private set; }
+
+            /// <summary>
+            /// 缓冲区
+            /// </summary>
+            public byte[] Buffer { get; private set; }
+
+            /// <summary>
+            /// 获取网络流
+            /// </summary>
+            public NetworkStream NetworkStream
+            {
+                get { return TcpClient.GetStream(); }
+            }
+        }
 
         /// <summary>
         /// 与客户端的连接已建立事件参数

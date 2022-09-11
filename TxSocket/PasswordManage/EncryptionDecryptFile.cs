@@ -64,7 +64,7 @@ namespace SuperNetwork.TxSocket.PasswordManage
            {
                haveDatelenth = fileSend.Filestream.Read(haveDate, 0, BufferSize);
            }//异常说明这个文件已经被我方取消掉；返回一个取消信息给对方
-           catch { return EncryptionDecryptFile.FileSevenEncryption(PasswordCode._sendUser, PasswordCode._fileCancel, fileSend.FileLabel); }
+           catch { return FileSevenEncryption(PasswordCode._sendUser, PasswordCode._fileCancel, fileSend.FileLabel); }
            if (haveDatelenth <= 0)
            return null; //说明数据发完了,文件会到外面去关掉
            fileSend.FileOkLenth = fileSend.FileOkLenth + haveDatelenth;
@@ -91,7 +91,7 @@ namespace SuperNetwork.TxSocket.PasswordManage
            {
                fileSend.Filestream.Write(haveDate, 0, haveDate.Length);
            }//异常说明这个文件已经被我方取消掉；返回一个取消信息给对方
-           catch { return EncryptionDecryptFile.FileSevenEncryption(PasswordCode._receiveUser, PasswordCode._fileCancel, fileSend.FileLabel); }
+           catch { return FileSevenEncryption(PasswordCode._receiveUser, PasswordCode._fileCancel, fileSend.FileLabel); }
            fileSend.FileOkLenth = fileSend.FileOkLenth + haveDate.Length;
            haveDate = FileSevenEncryption(PasswordCode._receiveUser, PasswordCode._dateSuccess, fileSend.FileLabel);
            return haveDate;

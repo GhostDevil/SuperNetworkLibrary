@@ -70,7 +70,7 @@ namespace SuperNetwork.SuperWebSocket
         /// <summary>
         /// 信号量
         /// </summary>
-        private Semaphore semap = new Semaphore(5, 5000);
+        private readonly Semaphore semap = new Semaphore(5, 5000);
         /// <summary>
         /// 客户端队列集合
         /// </summary>

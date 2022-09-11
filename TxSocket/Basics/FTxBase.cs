@@ -130,9 +130,9 @@ namespace SuperNetwork.TxSocket.Basics
         /// <param name="str">断开原因</param>
         internal void OnEngineLost(string str)
         {
-            if (this.EngineLost != null)
+            if (EngineLost != null)
             {
-                CommonMethod.eventInvoket(() => { this.EngineLost(str); });
+                CommonMethod.eventInvoket(() => { EngineLost(str); });
                 FileStart.FileStopAll();//文件处理那里中断所有的文件
             }
         }
@@ -141,10 +141,10 @@ namespace SuperNetwork.TxSocket.Basics
         /// </summary>
         internal void OnEngineClose()
         {
-            if (this.EngineClose != null && _engineStart == true)
+            if (EngineClose != null && _engineStart == true)
             {
                 _engineStart = false;
-                CommonMethod.eventInvoket(() => { this.EngineClose(); });
+                CommonMethod.eventInvoket(() => { EngineClose(); });
                 FileStart.FileStopAll();//文件处理那里中断所有的文件
             }
         }
@@ -155,7 +155,7 @@ namespace SuperNetwork.TxSocket.Basics
         /// <param name="str">文本数据</param>
         internal void OnAcceptString(IPEndPoint iPEndPoint, string str)
         {
-            if (this.AcceptString != null)
+            if (AcceptString != null)
             {
                 CommonMethod.eventInvoket(() => { AcceptString(iPEndPoint, str); });
             }
@@ -167,9 +167,9 @@ namespace SuperNetwork.TxSocket.Basics
         /// <param name="bytes">图片数据</param>
         internal void OnAcceptByte(IPEndPoint iPEndPoint, byte[] bytes)
         {
-            if (this.AcceptByte != null)
+            if (AcceptByte != null)
             {
-                CommonMethod.eventInvoket(() => { this.AcceptByte(iPEndPoint, bytes); });
+                CommonMethod.eventInvoket(() => { AcceptByte(iPEndPoint, bytes); });
             }
         }
         /// <summary>
@@ -178,9 +178,9 @@ namespace SuperNetwork.TxSocket.Basics
         /// <param name="iPEndPoint">对方终结点</param>
         internal void OndateSuccess(IPEndPoint iPEndPoint)
         {
-            if (this.dateSuccess != null)
+            if (dateSuccess != null)
             {
-                CommonMethod.eventInvoket(() => { this.dateSuccess(iPEndPoint); });
+                CommonMethod.eventInvoket(() => { dateSuccess(iPEndPoint); });
             }
         }
         #endregion

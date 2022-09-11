@@ -13,12 +13,12 @@ namespace SuperNetwork.SuperSocket.SuperUdp
     /// 作 者:不良帥
     /// 描 述:DUP同步通讯服务端
     /// </summary>
-    public class UDPSyncServer
+    public class UDPServer
     {
         #region Fields(3)
 
         private Thread mListenThread;
-        private int mRecieverBuffer = 1024;
+        private readonly int mRecieverBuffer = 1024;
         private Socket mSocket;
 
         #endregion
@@ -33,15 +33,15 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         /// <summary>
         /// 数据包
         /// </summary>
-        public int RecieverBuffer { get; set;}
-       
+        public int RecieverBuffer { get; set; }
+
         #endregion
 
         #region DelegatesandEvents(3)
         /// <summary>
         /// 接受数据事件
         /// </summary>
-        public event EventHandler<RecieveDataEventArgs> RecievedData;
+        public event EventHandler<ReceiveDataEventArgs> ReceivedData;
         /// <summary>
         /// 开始侦听事件
         /// </summary>
@@ -66,24 +66,23 @@ namespace SuperNetwork.SuperSocket.SuperUdp
 
             StartListening?.Invoke(this, new EventArgs());
 
-            mListenThread = new Thread(new ParameterizedThreadStart(StartListen));
-            mListenThread.IsBackground = true;
+            mListenThread = new Thread(new ParameterizedThreadStart(StartListen))
+            {
+                IsBackground = true
+            };
             mListenThread.Start();
         }
         /// <summary>
         /// 停止侦听
         /// </summary>
-        public void StoptListen()
+        public void StopListen()
         {
-            if (StopListening != null)
-            {
-                StopListening(this, new EventArgs());
-            }
+            StopListening?.Invoke(this, new EventArgs());
 
             mSocket.Close();
             mListenThread.Abort();
         }
-       
+
         private void StartListen(object sender)
         {
             //Setting Endpoint
@@ -95,7 +94,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
 
             //Getting Client Ip
             IPEndPoint clientEndpoint = new IPEndPoint(IPAddress.Any, 0);
-            EndPoint Remote = (EndPoint)(clientEndpoint);
+            EndPoint Remote = clientEndpoint;
 
             //Start loop for receiving data
             while (true)
@@ -105,24 +104,16 @@ namespace SuperNetwork.SuperSocket.SuperUdp
                     int recv;
                     byte[] receivePackage = new byte[mRecieverBuffer];
 
-
                     //Receive data from client
                     recv = mSocket.ReceiveFrom(receivePackage, ref Remote);
-                    
+
                     string s = Encoding.UTF8.GetString(receivePackage);
                     s = ToHexString(receivePackage);
-                    //object data = bf.Deserialize(stream);
-
-                    //Deserialize data
-                    //BinaryFormatter bf = new BinaryFormatter();
-                    //MemoryStream stream = new MemoryStream(receivePackage);
-                    //object data = bf.Deserialize(stream);
-
-                    RecievedData?.Invoke(this, new RecieveDataEventArgs(s));
+                    ReceivedData?.Invoke(this, new ReceiveDataEventArgs(s));
                 }
                 catch (Exception)
                 {
-                    
+
                 }
             }
         }
@@ -154,17 +145,17 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         /// <summary>
         /// 事件参数
         /// </summary>
-        public class RecieveDataEventArgs : EventArgs
+        public class ReceiveDataEventArgs : EventArgs
         {
 
-            private object mData;
+            private readonly object mData;
 
             #region Constructors(1)
             /// <summary>
             /// 16进制字符串，空格分隔。
             /// </summary>
             /// <param name="data"></param>
-            public RecieveDataEventArgs(object data)
+            public ReceiveDataEventArgs(object data)
             {
                 mData = data;
             }

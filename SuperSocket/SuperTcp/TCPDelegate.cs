@@ -13,7 +13,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// <param name="temp">socket对象</param>
         /// <param name="dataBytes">字节数据</param>
         /// <param name="length">长度</param>
-        public delegate void ReceviceByteEventHandler(Socket temp, byte[] dataBytes,int length);
+        public delegate void RevoiceByteEventHandler(Socket temp, byte[] dataBytes,int length);
         /// <summary>
         /// 返回错误消息事件委托
         /// </summary>
@@ -29,7 +29,7 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="msg">消息</param>
         /// <param name="state">Socket状态</param>
-        public delegate void StateInfoEventHandler(string msg, TCPSyncSocketEnum.SocketState state);
+        public delegate void StateInfoEventHandler(string msg, TCPSocketEnum.SocketState state);
         /// <summary>
         /// 新客户端上线时返回客户端事件委托
         /// </summary>
@@ -47,26 +47,26 @@ namespace SuperNetwork.SuperSocket.SuperTcp
         /// </summary>
         /// <param name="m_pSocket">异步套接字</param>
         /// <param name="m_pDatagram">接收到的数据流</param>
-        public delegate void AsyncDataAcceptedEventHandler(TCPAsyncSocketHelper m_pSocket, byte[] m_pDatagram);
+        public delegate void DataAcceptedAsyncEventHandler(TCPSocketAsyncHelper m_pSocket, byte[] m_pDatagram);
 
         /// <summary>
         /// 发送完毕
         /// </summary>
         /// <param name="m_pSocket">异步套接字</param>
         /// <param name="m_pIsSuccess">发送结果</param>
-        public delegate void AsyncDataSendedEventHandler(TCPAsyncSocketHelper m_pSocket, bool m_pIsSuccess);
+        public delegate void DataSendedAsyncEventHandler(TCPSocketAsyncHelper m_pSocket, bool m_pIsSuccess);
 
         /// <summary>
         /// 接收连接委托
         /// </summary>
         /// <param name="m_pSocket">异步套接字</param>
-        public delegate void AsyncSocketAcceptEventHandler(TCPAsyncSocketHelper m_pSocket);
+        public delegate void SocketAcceptAsyncEventHandler(TCPSocketAsyncHelper m_pSocket);
 
         /// <summary>
         /// 关闭连接委托
         /// </summary>
         /// <param name="m_pSocket">异步套接字</param>
-        public delegate void AsyncSocketClosedEventHandler(TCPAsyncSocketHelper m_pSocket);
+        public delegate void SocketClosedAsyncEventHandler(TCPSocketAsyncHelper m_pSocket);
 
         ///// <summary>
         ///// 连接状态改变时返回连接状态事件委托

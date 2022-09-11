@@ -34,8 +34,8 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         /// </summary>
         public event AsyncUdpEventHandler Received;
 
-        private byte[] buffer;
-        int socketPort;
+        private readonly byte[] buffer;
+        readonly int socketPort;
         /// <summary>
         /// 是否监听
         /// </summary>
@@ -135,8 +135,8 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         /// </summary>
         public class AsyncUdpEventArgs : EventArgs
         {
-            private EndPoint _remoteEndPoint;
-            private byte[] _data;
+            private readonly EndPoint _remoteEndPoint;
+            private readonly byte[] _data;
             /// <summary>
             /// 获取终结点
             /// </summary>

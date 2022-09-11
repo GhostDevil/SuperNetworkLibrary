@@ -9,21 +9,21 @@ namespace SuperNetwork.SuperSocket.SuperUdp
     /// <summary>
     /// 
     /// </summary>
-    class UDPAsyncSocket : IDisposable
+    class UDPSocketAsync : IDisposable
     {
         [DllImport("Ws2_32.dll")]
         private static extern IntPtr WSAJoinLeaf(IntPtr sck, IntPtr name, int nameLen, IntPtr lpCallerData, IntPtr lpCalleeData, IntPtr lpSQOS, IntPtr lpGQOS, int dwFlags);
 
         #region 私有数据成员
-        private System.Net.Sockets.Socket m_UdpSocket;
+        private Socket m_UdpSocket;
 
-        private System.Net.IPEndPoint m_DefaultBind;                    // 默认绑定目标(本地监听)
-        private System.Net.IPEndPoint m_DefaultTarget;                    // 默认发送目标
-        private System.Net.IPAddress m_DefaultMultcastGroup;            // 默认加入的组播组
+        private IPEndPoint m_DefaultBind;                    // 默认绑定目标(本地监听)
+        private IPEndPoint m_DefaultTarget;                    // 默认发送目标
+        private readonly IPAddress m_DefaultMultcastGroup;            // 默认加入的组播组
 
-        private SocketAsyncEventArgsPool m_SendArgPool;                    // 发送参数池
+        private readonly SocketAsyncEventArgsPool m_SendArgPool;                    // 发送参数池
 
-        private System.Net.Sockets.SocketAsyncEventArgs m_RecvArgs;        // 接收的默认参数构造
+        private SocketAsyncEventArgs m_RecvArgs;        // 接收的默认参数构造
         private byte[] m_RecvBuff;                                        // 接收缓冲
 
         private long m_TotalPacksByRecv;                                // 收到的总数据包数
@@ -31,7 +31,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         private long m_TotalBytesBySend;                                // 发出的总字节数
         #endregion
 
-        public IDataEvent<UDPAsyncSocket> OnDataEventHandle;                    // 数据处理类必须实现此接口，并将其引用传递到这里
+        public IDataEvent<UDPSocketAsync> OnDataEventHandle;                    // 数据处理类必须实现此接口，并将其引用传递到这里
 
         #region 属性实现代码块
         public long TotalPacksByRecv
@@ -85,7 +85,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         /// <summary>
         /// 同时设定默认的发送目标
         /// </summary>
-        public UDPAsyncSocket(System.Net.IPEndPoint defaultTarget): this(defaultTarget, null, null)
+        public UDPSocketAsync(IPEndPoint defaultTarget): this(defaultTarget, null, null)
         {
         }
 
@@ -93,7 +93,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         /// 构造函数
         /// 同时设定默认的发送目标、需要加入的广播组地址
         /// </summary>
-        public UDPAsyncSocket(System.Net.IPEndPoint defaultTarget, IPAddress multicastGroupAddr)
+        public UDPSocketAsync(IPEndPoint defaultTarget, IPAddress multicastGroupAddr)
             : this(defaultTarget, multicastGroupAddr, null)
         {
         }
@@ -103,7 +103,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
         /// 构造函数
         /// 同时设定默认的发送目标、需要加入的广播组地址、绑定的本地地址
         /// </summary>
-        public UDPAsyncSocket(System.Net.IPEndPoint defaultTarget, IPAddress multicastGroupAddr, System.Net.IPEndPoint defaultBindingEndPoint)
+        public UDPSocketAsync(IPEndPoint defaultTarget, IPAddress multicastGroupAddr, IPEndPoint defaultBindingEndPoint)
         {
             m_DefaultTarget = defaultTarget;
             m_DefaultMultcastGroup = multicastGroupAddr;
@@ -177,7 +177,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
                 m_RecvArgs = new SocketAsyncEventArgs();
                 m_RecvArgs.UserToken = this;
                 m_RecvArgs.RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                m_RecvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(this.Udp_OnReceiveCompleted);
+                m_RecvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(Udp_OnReceiveCompleted);
 
             }
             catch (SocketException exp)
@@ -232,7 +232,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
                 m_UdpSocket.Close();
                 m_UdpSocket = null;
             }
-            return (true);
+            return true;
         }
 
         /// <summary>
@@ -249,7 +249,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
                 //m_UdpSocket.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, multicastOption);
 
                 WinsockSockAddr sckaddr = new WinsockSockAddr(groupAddress);
-                WSAJoinLeaf(this.m_UdpSocket.Handle, sckaddr.PinnedSockAddr, Marshal.SizeOf(typeof(WinsockSockAddr.SOCKADDR_IN)), IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, 4);
+                WSAJoinLeaf(m_UdpSocket.Handle, sckaddr.PinnedSockAddr, Marshal.SizeOf(typeof(WinsockSockAddr.SOCKADDR_IN)), IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, 4);
             }
             catch (SocketException e)
             {
@@ -311,7 +311,7 @@ namespace SuperNetwork.SuperSocket.SuperUdp
 
         private void Udp_OnReceiveCompleted(object sender, SocketAsyncEventArgs e)
         {
-            UDPAsyncSocket udp = (UDPAsyncSocket)e.UserToken;
+            UDPSocketAsync udp = (UDPSocketAsync)e.UserToken;
             Socket sck = (Socket)udp.m_UdpSocket;
 
             if (e.SocketError == SocketError.Success)
@@ -582,8 +582,8 @@ namespace SuperNetwork.SuperSocket.SuperUdp
     /// </summary>
     public class SocketAsyncEventArgsPool : SocketAsyncEventArgs
     {
-        private Stack<SocketAsyncEventArgs> m_pool;
-        private int _Capacity;                            // 池的最大容量
+        private readonly Stack<SocketAsyncEventArgs> m_pool;
+        private readonly int _Capacity;                            // 池的最大容量
 
 
         /// <summary>
