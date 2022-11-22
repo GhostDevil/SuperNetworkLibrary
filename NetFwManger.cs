@@ -2,7 +2,7 @@
 using System;
 using NetFwTypeLib;//COM+ 组件 NetFwTypeLib
 
-namespace SuperFramework
+namespace SuperNetwork
 {
     /// <summary>
     /// 日期:2014-08-05

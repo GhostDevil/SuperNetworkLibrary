@@ -1,4 +1,4 @@
-﻿namespace SuperNetwork.SuperNetwork.SuperWebSocket
+﻿namespace SuperNetwork.SuperWebSocket
 {
     public class SuperWebSocket4
     {

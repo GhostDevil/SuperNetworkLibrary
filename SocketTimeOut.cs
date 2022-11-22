@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace SuperNetwork.SuperNetwork
+namespace SuperNetwork
 {
     public class SocketTimeOut
     {
