@@ -11,6 +11,11 @@
     <AssemblyVersion>22.14.2.0</AssemblyVersion>
     <Description>网络通讯辅助类</Description>
   </PropertyGroup>
+ <ItemGroup>
+   <Compile Remove="SuperSocket\**" />
+   <EmbeddedResource Remove="SuperSocket\**" />
+   <None Remove="SuperSocket\**" />
+ </ItemGroup>
    <ItemGroup>
      <COMReference Include="NetFwTypeLib">
        <WrapperTool>tlbimp</WrapperTool>
