@@ -1,14 +1,16 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Management;
 using System.Net;
+using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 //using System.Web;
 
 namespace SuperNetwork
@@ -21,7 +23,7 @@ namespace SuperNetwork
     /// </summary>
     public class NetworkHelper
     {
-        #region  检查设置的端口号是否正确，返回正确的端口号。 
+
         /// <summary>
         /// 检查设置的端口号是否正确，并返回正确的端口号,无效端口号返回-1。
         /// </summary>
@@ -52,9 +54,8 @@ namespace SuperNetwork
             }
             return validPort;
         }
-        #endregion
 
-        #region  将字符串形式的IP地址转换成IPAddress对象 
+
         /// <summary>
         /// 将字符串形式的IP地址转换成IPAddress对象
         /// </summary>
@@ -63,9 +64,9 @@ namespace SuperNetwork
         {
             return IPAddress.Parse(ip);
         }
-        #endregion
 
-        #region  获取本机的计算机名 
+
+
         /// <summary>
         /// 获取本机的计算机名
         /// </summary>
@@ -76,9 +77,9 @@ namespace SuperNetwork
                 return Dns.GetHostName();
             }
         }
-        #endregion
 
-        #region  检测机器是否联网 
+
+
         [DllImport("wininet.dll")]
         private extern static bool InternetGetConnectedState(int Description, int ReservedValue);
 
@@ -91,9 +92,8 @@ namespace SuperNetwork
             int Desc = 0;
             return InternetGetConnectedState(Desc, 0);
         }
-        #endregion
 
-        #region  获取MAC地址 
+
         /// <summary>
         /// 通过SendARP获取网卡Mac
         /// </summary>
@@ -150,55 +150,56 @@ namespace SuperNetwork
                 return macAddress.ToString();
             }
         }
-        /// <summary>
-         /// 获取mac不带-
-         /// </summary>
-         /// <param name="loip"></param>
-         /// <returns></returns>
-        public static string GetMacAddress(string loip, string splitStr = null)
-        {
-            try
-            {
-                //获取网卡硬件地址 
-                string mac = "";
-                ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
-                ManagementObjectCollection moc = mc.GetInstances();
-                foreach (ManagementObject mo in moc)
-                {
-                    if ((bool)mo["IPEnabled"] == true)
-                    {
-                        Array ar;
-                        ar = (Array)(mo.Properties["IpAddress"].Value);
-                        foreach (string ip in ar)
-                        {
-                            if (ip == loip)
-                            {
-                                mac = mo["MacAddress"].ToString();
-                                if (string.IsNullOrEmpty(mac))
-                                    continue;
-                                if (splitStr != null)
-                                {
-                                    mac = mac.Replace(":", splitStr);
-                                }
-                                moc = null;
-                                mc = null;
-                                return mac;
-                            }
-                        }
-                    }
-                }
-            }
-            catch
-            {
+        ///// <summary>
+        // /// 获取mac不带-
+        // /// </summary>
+        // /// <param name="loip"></param>
+        // /// <returns></returns>
+        //public static string GetMacAddress(string loip, string splitStr = null)
+        //{
+        //    try
+        //    {
+        //        //获取网卡硬件地址 
+        //        string mac = "";
+        //        ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+        //        ManagementObjectCollection moc = mc.GetInstances();
+        //        foreach (ManagementObject mo in moc)
+        //        {
+        //            if ((bool)mo["IPEnabled"] == true)
+        //            {
+        //                Array ar;
+        //                ar = (Array)(mo.Properties["IpAddress"].Value);
+        //                foreach (string ip in ar)
+        //                {
+        //                    if (ip == loip)
+        //                    {
+        //                        mac = mo["MacAddress"].ToString();
+        //                        if (string.IsNullOrEmpty(mac))
+        //                            continue;
+        //                        if (splitStr != null)
+        //                        {
+        //                            mac = mac.Replace(":", splitStr);
+        //                        }
+        //                        moc = null;
+        //                        mc = null;
+        //                        return mac;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch
+        //    {
 
-            }
-            return "unknow";
-        }
+        //    }
+        //    return "unknow";
+        //}
+
         /// <summary>
         /// 获取本机MAC地址
         /// </summary>
         /// <param name="splitStr">分隔符</param>
-        /// <returns>返回MAC地址</returns>
+        /// <returns>返回MAC地址</returns>        
         public static string GetRealMacAddress(string splitStr)
         {
             ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
@@ -264,7 +265,7 @@ namespace SuperNetwork
             }
             return macAddress.ToUpper();
         }
-        #endregion
+
 
         /// <summary>
         /// 获取IP信息
@@ -304,7 +305,7 @@ namespace SuperNetwork
             return tempLocalIp;
         }
 
-        #region  获取本机的局域网IP        
+
         /// <summary>
         /// 获取本机的局域网IP
         /// </summary>        
@@ -323,7 +324,7 @@ namespace SuperNetwork
         /// <summary>
         /// 获得本机局域网ip
         /// </summary>
-        /// <returns></returns>
+        /// <returns></returns>       
         public static string GetPrivateIP()
         {
             ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
@@ -354,9 +355,8 @@ namespace SuperNetwork
             return IpArray;
         }
 
-        #endregion
 
-        #region  获取本机在Internet网络的广域网IP 
+
         ///// <summary>
         ///// 获取本机在Internet网络的广域网IP
         ///// </summary>        
@@ -373,31 +373,31 @@ namespace SuperNetwork
         //        return addressList[2].ToString();
         //    }
         //}
-        /// <summary>
-        /// 获取公网IP
-        /// </summary>
-        /// <returns>公网IP地址</returns>
-        public static string GetPublicIP()
-        {
-            try
-            {
-                using (WebClient wc = new WebClient())
-                {
-                    string html = wc.DownloadString("http://ip.qq.com");
-                    System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(html, "<span class=\"red\">([^<]+)</span>");
-                    if (m.Success) return m.Groups[1].Value;
 
-                    return "";
-                }
-            }
-            catch(Exception)
-            {
-                return "";
-            }
-        }
-        #endregion
+        ///// <summary>
+        ///// 获取公网IP
+        ///// </summary>
+        ///// <returns>公网IP地址</returns>
+        //public async static Task<string> GetPublicIPAsync()
+        //{
+        //    try
+        //    {
+        //        using (HttpClient wc = new HttpClient())
+        //        {
+        //            string html = await wc.GetStringAsync("http://ip.qq.com");
+        //            System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(html, "<span class=\"red\">([^<]+)</span>");
+        //            if (m.Success) return m.Groups[1].Value;
 
-        //#region  获得Web用户IP 
+        //            return "";
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return "";
+        //    }
+        //}
+
+
         ///// <summary>
         ///// 获得Web用户IP
         ///// </summary>
@@ -431,9 +431,7 @@ namespace SuperNetwork
         //    else
         //        return ip;
         //}
-        //#endregion
 
-        #region  根据主机名（域名）获得主机的IP地址 
         /// <summary>
         /// 根据主机名（域名）获得主机的IP地址
         /// </summary>
@@ -455,9 +453,7 @@ namespace SuperNetwork
                 return string.Empty;
             }
         }
-        #endregion
 
-        #region  关闭、重启局域网计算机 
         /// <summary>
         /// 关闭、重启局域网计算机
         /// </summary>
@@ -466,34 +462,32 @@ namespace SuperNetwork
         /// <param name="selfaAdminName">自己的管理员账号</param>
         /// <param name="adminPwd">自己的管理员密码</param>
         /// <returns></returns>
-        //public static bool Execute(string command, string NameOrIP, string selfaAdminName, string adminPwd)
-        //{
-        //    ConnectionOptions op = new ConnectionOptions();
-        //    op.Username = selfaAdminName;//或者你的帐号（注意要有管理员的权限）
-        //    op.Password = adminPwd; //你的密码
-        //    ManagementScope scope = new ManagementScope(@"\\" + NameOrIP + "\\root\\cimv2", op);
-        //    try
-        //    {
-        //        scope.Connect();
-        //        System.Management.ObjectQuery oq = new System.Management.ObjectQuery("SELECT * FROM Win32_OperatingSystem");
-        //        ManagementObjectSearcher query1 = new ManagementObjectSearcher(scope, oq);
-        //        //得到WMI控制 
-        //        ManagementObjectCollection queryCollection1 = query1.Get();
-        //        foreach (ManagementObject mobj in queryCollection1)
-        //        {
-        //            string[] str = { "" };
-        //            mobj.InvokeMethod(command, str);//执行命令
-        //        }
-        //        return true;
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
-        //}
-        #endregion
+        public static bool Execute(string command, string NameOrIP, string selfaAdminName, string adminPwd)
+        {
+            ConnectionOptions op = new ConnectionOptions();
+            op.Username = selfaAdminName;//或者你的帐号（注意要有管理员的权限）
+            op.Password = adminPwd; //你的密码
+            ManagementScope scope = new ManagementScope(@"\\" + NameOrIP + "\\root\\cimv2", op);
+            try
+            {
+                scope.Connect();
+                System.Management.ObjectQuery oq = new System.Management.ObjectQuery("SELECT * FROM Win32_OperatingSystem");
+                ManagementObjectSearcher query1 = new ManagementObjectSearcher(scope, oq);
+                //得到WMI控制 
+                ManagementObjectCollection queryCollection1 = query1.Get();
+                foreach (ManagementObject mobj in queryCollection1)
+                {
+                    string[] str = { "" };
+                    mobj.InvokeMethod(command, str);//执行命令
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
-        #region  唤醒局域网内计算机 
         /// <summary>
         /// 唤醒局域网内计算机
         /// </summary>
@@ -522,9 +516,8 @@ namespace SuperNetwork
 
             int result = client.Send(packet, packet.Length);
         }
-        #endregion
 
-        #region  Ip地址转换 
+
         /// <summary>
         /// 将ip地址转为int型
         /// </summary>
@@ -594,9 +587,8 @@ namespace SuperNetwork
             else
                 return "";
         }
-        #endregion
 
-        //#region 提取开启代理/cdn服务后的客户端真实IP
+
         ///// <summary>
         ///// 提取开启代理/cdn服务后的客户端真实IP
         ///// </summary>
@@ -623,8 +615,6 @@ namespace SuperNetwork
         //    }
         //    return ip;
         //}
-        //#endregion
-
 
 
         static PingCompletedEventHandler ipHandle = null;
@@ -639,7 +629,7 @@ namespace SuperNetwork
         /// <param name="startIndex"></param>
         /// <param name="stopIndex"></param>
         /// <param name="pingTime"></param>
-        public static async void GetAllUseIps(string ipPrefix, PingCompletedEventHandler userIP, PingCompletedEventHandler noUserIP, int startIndex = 1, int stopIndex = 255,int pingTime =200)
+        public static async void GetAllUseIpsAsync(string ipPrefix, PingCompletedEventHandler userIP, PingCompletedEventHandler noUserIP, int startIndex = 1, int stopIndex = 255, int pingTime = 200)
         {
             try
             {
@@ -662,26 +652,26 @@ namespace SuperNetwork
         static int count = 0;
         private static void _myPing_PingCompleted(object sender, PingCompletedEventArgs e)
         {
-           
+
             if (e.Reply.Status == IPStatus.Success)
             {
                 ipList.Add(e.Reply.Address.ToString());
-                ipHandle?.Invoke(count+1, e);
+                ipHandle?.Invoke(count + 1, e);
             }
             else
             {
-                ipNoHandle?.Invoke(count+1,e );
+                ipNoHandle?.Invoke(count + 1, e);
             }
             count++;
-          
+
             if (count >= 255)
             {
                 count = 0;
             }
         }
-        /// <summary></summary>  
+        /// <summary>
         /// 获取本机各网卡的详细信息  
-        /// <summary></summary>  
+        /// </summary>  
         public static List<NetworkInterfaceInfo> ShowNetworkInterfaceMessage()
         {
             NetworkInterface[] fNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
@@ -689,23 +679,23 @@ namespace SuperNetwork
             foreach (NetworkInterface adapter in fNetworkInterfaces)
             {
                 #region " 网卡类型 "
-                NetworkCardType fCardType =  NetworkCardType.Nono;
+                NetworkCardType fCardType = NetworkCardType.Nono;
                 string fRegistryKey = "SYSTEM\\CurrentControlSet\\Control\\Network\\{4D36E972-E325-11CE-BFC1-08002BE10318}\\" + adapter.Id + "\\Connection";
                 RegistryKey rk = Registry.LocalMachine.OpenSubKey(fRegistryKey, false);
-                string conname="";
+                string conname = "";
                 if (rk != null)
                 {
                     // 区分 PnpInstanceID   
                     // 如果前面有 PCI 就是本机的真实网卡  
                     // MediaSubType 为 01 则是常见网卡，02为无线网卡。  
                     string fPnpInstanceID = rk.GetValue("PnpInstanceID", "").ToString();
-                    conname= rk.GetValue("Name", "").ToString();
+                    conname = rk.GetValue("Name", "").ToString();
                     int fMediaSubType = Convert.ToInt32(rk.GetValue("MediaSubType", 0));
                     if (fPnpInstanceID.Length > 3 &&
                         fPnpInstanceID.Substring(0, 3) == "PCI")
-                        fCardType =  NetworkCardType.Physical;
+                        fCardType = NetworkCardType.Physical;
                     else if (fMediaSubType == 1)
-                        fCardType =  NetworkCardType.Virtual;
+                        fCardType = NetworkCardType.Virtual;
                     else if (fMediaSubType == 2)
                         fCardType = NetworkCardType.Wifi;
                 }
@@ -730,7 +720,7 @@ namespace SuperNetwork
                     if (UnicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork)
                         Console.WriteLine("Ip Address .......... : {0}", UnicastIPAddressInformation.Address); // Ip 地址  
                 }
-                list.Add(new NetworkInterfaceInfo() { ConnectName= conname, NetworkInfo = adapter, Type = fCardType });
+                list.Add(new NetworkInterfaceInfo() { ConnectName = conname, NetworkInfo = adapter, Type = fCardType });
                 #endregion
             }
             return list;

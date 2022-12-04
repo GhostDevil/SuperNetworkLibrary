@@ -1,34 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFrameworks>net472;net481;net6.0;net7.0</TargetFrameworks>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>SuperNetwork</RootNamespace>
-    <FileVersion>22.12.14.2</FileVersion>
-    <AssemblyVersion>22.14.2.0</AssemblyVersion>
-    <Description>网络通讯辅助类</Description>
-  </PropertyGroup>
- <ItemGroup>
-   <Compile Remove="SuperSocket\**" />
-   <EmbeddedResource Remove="SuperSocket\**" />
-   <None Remove="SuperSocket\**" />
- </ItemGroup>
-   <ItemGroup>
-     <COMReference Include="NetFwTypeLib">
-       <WrapperTool>tlbimp</WrapperTool>
-       <VersionMinor>0</VersionMinor>
-       <VersionMajor>1</VersionMajor>
-       <Guid>58fbcf7c-e7a9-467c-80b3-fc65e8fcca08</Guid>
-       <Lcid>0</Lcid>
-       <Isolated>false</Isolated>
-       <EmbedInteropTypes>true</EmbedInteropTypes>
-     </COMReference>
-   </ItemGroup>
-   <ItemGroup>
-     <PackageReference Include="WebSocket4Net" Version="0.15.2" />
-	   <PackageReference Include="System.Management" Version="7.0.0" />
-   </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFrameworks>net6.0;net7.0;net472;net481</TargetFrameworks>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<RootNamespace>SuperNetwork</RootNamespace>
+		<FileVersion>22.12.14.2</FileVersion>
+		<AssemblyVersion>22.14.2.0</AssemblyVersion>
+		<Description>网络通讯辅助类</Description>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="SuperSocket\**" />
+		<EmbeddedResource Remove="SuperSocket\**" />
+		<None Remove="SuperSocket\**" />
+	</ItemGroup>
+	<ItemGroup>
+		<COMReference Include="NetFwTypeLib">
+			<WrapperTool>tlbimp</WrapperTool>
+			<VersionMinor>0</VersionMinor>
+			<VersionMajor>1</VersionMajor>
+			<Guid>58fbcf7c-e7a9-467c-80b3-fc65e8fcca08</Guid>
+			<Lcid>0</Lcid>
+			<Isolated>false</Isolated>
+			<EmbedInteropTypes>true</EmbedInteropTypes>
+		</COMReference>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="WebSocket4Net" Version="0.15.2" />
+		<PackageReference Include="System.Management" Version="7.0.0" />
+	</ItemGroup>
 </Project>

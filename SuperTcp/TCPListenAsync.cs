@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace SuperNetwork.SuperTcp
@@ -58,8 +57,8 @@ namespace SuperNetwork.SuperTcp
             _clients = new ConcurrentDictionary<string, TcpClientState>();
 
             _listener = new TcpListener(Address, Port);
-            bool isWindows =RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (isWindows)
+
+            if (LibraryManager.IsWindows)
                 _listener.AllowNatTraversal(true);
         }
 
