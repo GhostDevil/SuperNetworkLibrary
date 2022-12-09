@@ -132,7 +132,7 @@ namespace SuperNetwork.TxSocket.Basics
         {
             if (EngineLost != null)
             {
-                CommonMethod.eventInvoket(() => { EngineLost(str); });
+                CommonMethod.EventInvoket(() => { EngineLost(str); });
                 FileStart.FileStopAll();//文件处理那里中断所有的文件
             }
         }
@@ -144,7 +144,7 @@ namespace SuperNetwork.TxSocket.Basics
             if (EngineClose != null && _engineStart == true)
             {
                 _engineStart = false;
-                CommonMethod.eventInvoket(() => { EngineClose(); });
+                CommonMethod.EventInvoket(() => { EngineClose(); });
                 FileStart.FileStopAll();//文件处理那里中断所有的文件
             }
         }
@@ -157,7 +157,7 @@ namespace SuperNetwork.TxSocket.Basics
         {
             if (AcceptString != null)
             {
-                CommonMethod.eventInvoket(() => { AcceptString(iPEndPoint, str); });
+                CommonMethod.EventInvoket(() => { AcceptString(iPEndPoint, str); });
             }
         }
         /// <summary>
@@ -169,7 +169,7 @@ namespace SuperNetwork.TxSocket.Basics
         {
             if (AcceptByte != null)
             {
-                CommonMethod.eventInvoket(() => { AcceptByte(iPEndPoint, bytes); });
+                CommonMethod.EventInvoket(() => { AcceptByte(iPEndPoint, bytes); });
             }
         }
         /// <summary>
@@ -180,7 +180,7 @@ namespace SuperNetwork.TxSocket.Basics
         {
             if (dateSuccess != null)
             {
-                CommonMethod.eventInvoket(() => { dateSuccess(iPEndPoint); });
+                CommonMethod.EventInvoket(() => { dateSuccess(iPEndPoint); });
             }
         }
         #endregion

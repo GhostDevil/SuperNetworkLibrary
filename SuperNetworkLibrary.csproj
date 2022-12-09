@@ -18,6 +18,11 @@
 		<None Remove="SuperSocket\**" />
 	</ItemGroup>
 	<ItemGroup>
+	  <None Remove=".gitattributes" />
+	  <None Remove=".gitignore" />
+	  <None Remove="README.md" />
+	</ItemGroup>
+	<ItemGroup>
 		<COMReference Include="NetFwTypeLib">
 			<WrapperTool>tlbimp</WrapperTool>
 			<VersionMinor>0</VersionMinor>

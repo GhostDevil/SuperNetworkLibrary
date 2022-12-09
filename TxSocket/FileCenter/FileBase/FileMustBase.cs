@@ -20,7 +20,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <param name="FileLabel">文件标签</param>
         public void FileCancel(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileMustBase.FileCancel(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileMustBase.FileCancel(FileLabel); });
         }
         /// <summary>
         /// 对方暂停；我方也已经暂停；等待着对方的再一次请求传输；会在FileOrNotContingue这里触发
@@ -28,7 +28,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <param name="FileLabel">文件标签</param>
         public void FileStop(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileMustBase.FileStop(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileMustBase.FileStop(FileLabel); });
         }
         /// <summary>
         /// 文件已中断；状态已自动改为暂停状态；等待对方上线的时候；进行续传；
@@ -37,7 +37,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <param name="Reason">中断原因</param>
         public void FileBreak(int FileLabel, string Reason)
         {
-            CommonMethod.eventInvoket(() => { fileMustBase.FileBreak(FileLabel, Reason); });
+            CommonMethod.EventInvoket(() => { fileMustBase.FileBreak(FileLabel, Reason); });
         }
         /// <summary>
         /// 文件传输失败
@@ -45,7 +45,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <param name="FileLabel">文件标签</param>
         public void FileFailure(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileMustBase.FileFailure(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileMustBase.FileFailure(FileLabel); });
         }
         /// <summary>
         /// 文件开始续传；这时不会触发开始传输的方法
@@ -53,7 +53,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <param name="FileLabel">文件标签</param>
         public void FileContinue(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileMustBase.FileContinue(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileMustBase.FileContinue(FileLabel); });
         }
         /// <summary>
         /// 对方发过来的续传确认信息；你是否同意续传；
@@ -62,7 +62,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <returns>同意或不同意</returns>
         public bool FileOrNotContingue(int FileLabel)
         {
-           object haveBool= CommonMethod.eventInvoket(() => { return fileMustBase.FileOrNotContingue(FileLabel); });
+           object haveBool= CommonMethod.EventInvoket(() => { return fileMustBase.FileOrNotContingue(FileLabel); });
            bool haveb = (bool)haveBool;
            return haveb;
         }
@@ -72,7 +72,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <param name="FileLabel">文件标签</param>
         public void FileNoContinue(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileMustBase.FileNoContinue(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileMustBase.FileNoContinue(FileLabel); });
         }
         /// <summary>
         /// 得到文件的进度;每次缓冲区为单位折算成百分比输出进度；这样可以提高效率；
@@ -81,7 +81,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
         /// <param name="Progress">文件进度</param>
         public void FileProgress(int FileLabel, int Progress)
         {
-            CommonMethod.eventInvoket(() => { fileMustBase.FileProgress(FileLabel, Progress); });
+            CommonMethod.EventInvoket(() => { fileMustBase.FileProgress(FileLabel, Progress); });
         }
         /// <summary>
         /// 内部用的进度；里面会自动计算

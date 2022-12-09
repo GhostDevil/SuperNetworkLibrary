@@ -20,17 +20,17 @@ namespace SuperNetwork.TxSocket.FileCenter.FileSend
 
         public void SendSuccess(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileSendMust.SendSuccess(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileSendMust.SendSuccess(FileLabel); });
         }
 
         public void FileRefuse(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileSendMust.FileRefuse(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileSendMust.FileRefuse(FileLabel); });
         }
 
         public void FileStartOn(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileSendMust.FileStartOn(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileSendMust.FileStartOn(FileLabel); });
         }
 
         #endregion

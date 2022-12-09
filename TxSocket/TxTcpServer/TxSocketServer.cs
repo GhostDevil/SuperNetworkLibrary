@@ -269,7 +269,7 @@ namespace SuperNetwork.TxSocket
                 stateOne.WorkSocket.Close();
                 if (state.Remove(stateOne))//当没有登录的时候断掉，不触发下面的事件
                 {
-                    CommonMethod.eventInvoket(() => { Disconnection(stateOne.IpEndPoint, str); }); //当客户端断掉的时候触发此事件
+                    CommonMethod.EventInvoket(() => { Disconnection(stateOne.IpEndPoint, str); }); //当客户端断掉的时候触发此事件
                     FileOperate(stateOne.IpEndPoint.ToString() + "已经断开");//记录
                     FileStart.FileStopITxBase(stateOne);
                 }
@@ -315,7 +315,7 @@ namespace SuperNetwork.TxSocket
         {
                 stateOne.ConnectOk = true;
                 state.Add(stateOne);
-                CommonMethod.eventInvoket(() => { Connect(stateOne.IpEndPoint); });
+                CommonMethod.EventInvoket(() => { Connect(stateOne.IpEndPoint); });
                 FileOperate(stateOne.IpEndPoint.ToString() + "登陆成功");//记录
         }
         #endregion

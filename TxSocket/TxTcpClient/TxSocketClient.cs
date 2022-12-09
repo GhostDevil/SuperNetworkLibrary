@@ -122,7 +122,7 @@ namespace SuperNetwork.TxSocket
             if (reconnectOn == false)
             {
                 reconnectOn = true;
-                CommonMethod.eventInvoket(() => { ReconnectionStart(); });
+                CommonMethod.EventInvoket(() => { ReconnectionStart(); });
             }
             _engineStart = false;
             StartEngine();
@@ -160,9 +160,9 @@ namespace SuperNetwork.TxSocket
             else
             {
                 if (reconnectOn)
-                    CommonMethod.eventInvoket(() => { StartResult(false, "重连失败" + str); });
+                    CommonMethod.EventInvoket(() => { StartResult(false, "重连失败" + str); });
                 else
-                    CommonMethod.eventInvoket(() => { StartResult(false, str); });
+                    CommonMethod.EventInvoket(() => { StartResult(false, str); });
                 CloseEngine();//不重连了就关闭客户端，释放资源
             }//登录失败触发此事件
         }
@@ -179,8 +179,8 @@ namespace SuperNetwork.TxSocket
                 heartThread.Start();
             }
             if (reconnectOn)
-            { CommonMethod.eventInvoket(() => { StartResult(true, "重连成功"); }); reconnectOn = false; reconnectCi = 0; }
-            else { CommonMethod.eventInvoket(() => { StartResult(true, "启动成功"); }); }
+            { CommonMethod.EventInvoket(() => { StartResult(true, "重连成功"); }); reconnectOn = false; reconnectCi = 0; }
+            else { CommonMethod.EventInvoket(() => { StartResult(true, "启动成功"); }); }
         }
         #endregion
         #endregion

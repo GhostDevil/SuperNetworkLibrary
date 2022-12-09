@@ -23,7 +23,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileReceive
         /// <param name="FileLabel">文件标签</param>
         public void ReceiveSuccess(int FileLabel)
         {
-            CommonMethod.eventInvoket(() => { fileReceiveMust.ReceiveSuccess(FileLabel); });
+            CommonMethod.EventInvoket(() => { fileReceiveMust.ReceiveSuccess(FileLabel); });
         }
         /// <summary>
         /// 有个文件要传来；请问是否接收;
@@ -34,7 +34,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileReceive
         /// <returns>文件地址</returns>
         public string ReceiveOrNo(int FileLabel, string FileName, long FileLenth)
         {
-            object haveBool = CommonMethod.eventInvoket(() => { return fileReceiveMust.ReceiveOrNo(FileLabel, FileName, FileLenth); });
+            object haveBool = CommonMethod.EventInvoket(() => { return fileReceiveMust.ReceiveOrNo(FileLabel, FileName, FileLenth); });
             string haveb = (string)haveBool;
             return haveb;
         }

@@ -127,12 +127,15 @@ namespace SuperNetwork.SuperTcp
 
             try
             {
-                _listener.Stop();
 
+                _listener.Stop();
                 foreach (var client in _clients.Values)
                 {
+                   // TcpClient tCP = client.TcpClient;                    
                     client.TcpClient.Client.Disconnect(false);
+                    //RaiseClientDisconnected(tCP);
                 }
+                _listener.Stop();
                 _clients.Clear();
             }
             catch (ObjectDisposedException ex)
@@ -148,7 +151,24 @@ namespace SuperNetwork.SuperTcp
 
             return this;
         }
-
+        public bool CloseClient(TcpClient tcpClient)
+        {
+            try
+            {
+                if (tcpClient == null) return false;
+                if (tcpClient.Connected)
+                {
+                    tcpClient?.Close();
+                    tcpClient?.Dispose();
+                }
+                // 连接已关闭
+                TcpClientState internalClientClose;
+                _clients.TryRemove(tcpClient.Client.RemoteEndPoint.ToString(), out internalClientClose);
+                RaiseClientDisconnected(tcpClient);
+                return true;
+            }
+            catch (Exception ex) { return false; }
+        }
         private void ContinueAcceptTcpClient(TcpListener tcpListener)
         {
             try
@@ -201,7 +221,14 @@ namespace SuperNetwork.SuperTcp
             try
             {
                 TcpClientState internalClient = (TcpClientState)ar.AsyncState;
-                if (!internalClient.TcpClient.Connected) return;
+                if (!internalClient.TcpClient.Connected)
+                {
+                    // 连接已关闭
+                    TcpClientState internalClientClose;
+                    _clients.TryRemove(internalClient.TcpClient.Client.RemoteEndPoint.ToString(), out internalClientClose);
+                    RaiseClientDisconnected(internalClient.TcpClient);
+                    return;
+                }
 
                 NetworkStream networkStream = internalClient.NetworkStream;
 
