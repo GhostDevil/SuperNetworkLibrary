@@ -11,7 +11,7 @@ namespace SuperNetwork.XJSocket
     {
         private readonly byte[] iba_mIV = new byte[8];  //向量
         private readonly byte[] iba_mKey = new byte[8]; //密钥
-        private readonly DESCryptoServiceProvider io_DES = new DESCryptoServiceProvider();
+        private readonly DES io_DES = DES.Create();
 
         public XJEncrypt()
         {
@@ -87,7 +87,7 @@ namespace SuperNetwork.XJSocket
         /// </summary>
         /// <param name="as_value"></param>
         /// <returns></returns>
-        private byte[] FromHexString(string as_value)
+        private static byte[] FromHexString(string as_value)
         {
             byte[] lba_buf = new byte[Convert.ToInt32((int)(as_value.Length / 2))];
             for (int li_i = 0; li_i < lba_buf.Length; li_i++)
@@ -101,7 +101,7 @@ namespace SuperNetwork.XJSocket
         /// </summary>
         /// <param name="aba_buf"></param>
         /// <returns></returns>
-        private string GetHexString(byte[] aba_buf)
+        private static string GetHexString(byte[] aba_buf)
         {
             StringBuilder lsb_value = new StringBuilder();
             foreach (byte lb_byte in aba_buf)

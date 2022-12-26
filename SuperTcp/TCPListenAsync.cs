@@ -289,20 +289,20 @@ namespace SuperNetwork.SuperTcp
         /// <summary>
         /// 接收到数据报文事件
         /// </summary>
-        public event EventHandler<TcpDatagramReceivedEventArgs<byte[]>> DatagramReceived;
+        public event EventHandler<TCPDatagramReceivedEventArgs<byte[]>> DatagramReceived;
         /// <summary>
         /// 接收到数据报文明文事件
         /// </summary>
-        public event EventHandler<TcpDatagramReceivedEventArgs<string>> PlaintextReceived;
+        public event EventHandler<TCPDatagramReceivedEventArgs<string>> PlaintextReceived;
 
         private void RaiseDatagramReceived(TcpClient sender, byte[] datagram)
         {
-            DatagramReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<byte[]>(sender, datagram));
+            DatagramReceived?.Invoke(this, new TCPDatagramReceivedEventArgs<byte[]>(sender, datagram));
         }
 
         private void RaisePlaintextReceived(TcpClient sender, byte[] datagram)
         {
-            PlaintextReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<string>(sender, Encoding.GetString(datagram, 0, datagram.Length)));
+            PlaintextReceived?.Invoke(this, new TCPDatagramReceivedEventArgs<string>(sender, Encoding.GetString(datagram, 0, datagram.Length)));
         }
 
         /// <summary>
@@ -546,8 +546,8 @@ namespace SuperNetwork.SuperTcp
             /// <param name="buffer">字节数组缓冲区</param>
             public TcpClientState(TcpClient tcpClient, byte[] buffer)
             {
-                TcpClient = tcpClient ?? throw new ArgumentNullException("tcpClient");
-                Buffer = buffer ?? throw new ArgumentNullException("buffer");
+                TcpClient = tcpClient ?? throw new ArgumentNullException(nameof(tcpClient));
+                Buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
             }
 
             /// <summary>
@@ -579,9 +579,7 @@ namespace SuperNetwork.SuperTcp
             /// </summary>
             /// <param name="tcpClient">客户端</param>
             public TcpClientConnectedEventArgs(TcpClient tcpClient)
-            {
-                TcpClient = tcpClient ?? throw new ArgumentNullException("tcpClient is null");
-            }
+            => TcpClient = tcpClient ?? throw new ArgumentNullException("tcpClient is null");
 
             /// <summary>
             /// 客户端
@@ -599,10 +597,7 @@ namespace SuperNetwork.SuperTcp
             /// 与客户端的连接已断开事件参数
             /// </summary>
             /// <param name="tcpClient">客户端</param>
-            public TcpClientDisconnectedEventArgs(TcpClient tcpClient)
-            {
-                TcpClient = tcpClient ?? throw new ArgumentNullException("tcpClient");
-            }
+            public TcpClientDisconnectedEventArgs(TcpClient tcpClient) => TcpClient = tcpClient ?? throw new ArgumentNullException(nameof(tcpClient));
 
             /// <summary>
             /// 客户端
@@ -619,15 +614,12 @@ namespace SuperNetwork.SuperTcp
             /// tcp异常事件
             /// </summary>
             /// <param name="ex">异常对象</param>
-            public TcpExceptionEventArgs(Exception ex)
-            {
-                exception = ex ?? throw new ArgumentNullException("UnKnow Exception");
-            }
+            public TcpExceptionEventArgs(Exception ex) => Exception = ex ?? throw new ArgumentNullException("UnKnow Exception");
 
             /// <summary>
             /// 异常对象
             /// </summary>
-            public Exception exception { get; private set; }
+            public Exception Exception { get; private set; }
         }
     }
 }

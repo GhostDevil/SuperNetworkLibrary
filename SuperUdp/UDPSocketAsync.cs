@@ -112,8 +112,10 @@ namespace SuperNetwork.SuperUdp
             m_SendArgPool = new SocketAsyncEventArgsPool(8);
             for (int i = 0; i < 8; i++)
             {
-                SocketAsyncEventArgs ae = new SocketAsyncEventArgs();
-                ae.UserToken = this;
+                SocketAsyncEventArgs ae = new SocketAsyncEventArgs
+                {
+                    UserToken = this
+                };
                 ae.Completed += new EventHandler<SocketAsyncEventArgs>(Udp_OnSendCompleted);
                 m_SendArgPool.Push(ae);
             }
@@ -174,9 +176,11 @@ namespace SuperNetwork.SuperUdp
                 }
 
                 m_RecvBuff = new byte[1500];
-                m_RecvArgs = new SocketAsyncEventArgs();
-                m_RecvArgs.UserToken = this;
-                m_RecvArgs.RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                m_RecvArgs = new SocketAsyncEventArgs
+                {
+                    UserToken = this,
+                    RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0)
+                };
                 m_RecvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(Udp_OnReceiveCompleted);
 
             }
@@ -603,7 +607,7 @@ namespace SuperNetwork.SuperUdp
         /// </summary>
         public void Push(SocketAsyncEventArgs item)
         {
-            if (item == null) { throw new ArgumentNullException("Items added to a SocketAsyncEventArgsPool cannot be null"); }
+            if (item == null) { throw new ArgumentNullException(nameof(item)); }
             lock (m_pool)
             {
                 m_pool.Push(item);

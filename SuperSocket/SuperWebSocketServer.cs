@@ -7,14 +7,14 @@ using System.Net;
 using System.Threading;
 using System.Text.RegularExpressions;
 
-namespace SuperNetwork.SuperWebSocket
+namespace SuperNetwork.SuperSocket
 {
     /// <summary>
     /// 日 期:2015-11-26
     /// 作 者:不良帥
     /// 描 述:web通讯
     /// </summary>
-    public class WebSocketServer : SSocketObject
+    public class SuperWebSocketServer : SSocketObject
     {
         #region 推送器 加密
         public delegate void PushSockets(SSocketData sockets);
@@ -122,7 +122,7 @@ namespace SuperNetwork.SuperWebSocket
             try
             {
                 listener.Start();
-                Thread AccTh = new Thread(new ThreadStart(delegate
+                new Thread(new ThreadStart(delegate
                 {
                     while (true)
                     {
@@ -133,13 +133,14 @@ namespace SuperNetwork.SuperWebSocket
                         GetAcceptTcpClient();
                         Thread.Sleep(1);
                     }
-                }));
-                AccTh.Start();
+                })).Start();
             }
             catch (SocketException skex)
             {
-                SSocketData sks = new SSocketData();
-                sks.ex = skex;
+                SSocketData sks = new SSocketData
+                {
+                    Ex = skex
+                };
                 pushSockets.Invoke(sks);//推送至UI
 
             }
@@ -156,8 +157,10 @@ namespace SuperNetwork.SuperWebSocket
                 //维护客户端队列
                 Socket socket = tclient.Client;
                 NetworkStream stream = new NetworkStream(socket, true); //承载这个Socket
-                SSocketData sks = new SSocketData(tclient.Client.RemoteEndPoint as IPEndPoint, tclient, stream);
-                sks.NewClientFlag = true;
+                SSocketData sks = new SSocketData(tclient.Client.RemoteEndPoint as IPEndPoint, tclient, stream)
+                {
+                    NewClientFlag = true
+                };
                 //加入客户端集合.
                 AddClientList(sks);
                 //推送新客户端
@@ -177,13 +180,12 @@ namespace SuperNetwork.SuperWebSocket
             catch (Exception exs)
             {
                 semap.Release();
-                SSocketData sk = new SSocketData();
-                sk.ClientDispose = true;//客户端退出
-                sk.ex = new Exception(exs.ToString() + "新连接监听出现异常");
-                if (pushSockets != null)
+                SSocketData sk = new SSocketData
                 {
-                    pushSockets.Invoke(sk);//推送至UI
-                }
+                    ClientDispose = true,//客户端退出
+                    Ex = new Exception(exs.ToString() + "新连接监听出现异常")
+                };
+                pushSockets?.Invoke(sk);//推送至UI
             }
         }
         /// <summary>
@@ -192,8 +194,7 @@ namespace SuperNetwork.SuperWebSocket
         /// <param name="ir"></param>
         private void EndReader(IAsyncResult ir)
         {
-            SSocketData sks = ir.AsyncState as SSocketData;
-            if (sks != null && listener != null)
+            if (ir.AsyncState is SSocketData sks && listener != null)
             {
                 try
                 {
@@ -214,7 +215,7 @@ namespace SuperNetwork.SuperWebSocket
                         ClientList.Remove(sks);
                         SSocketData sk = sks;
                         sk.ClientDispose = true;//客户端退出
-                        sk.ex = skex;
+                        sk.Ex = skex;
                         pushSockets.Invoke(sks);//推送至UI
                     }
                 }
@@ -302,20 +303,19 @@ namespace SuperNetwork.SuperWebSocket
                         //没有连接时,标识退出
                         SSocketData ks = new SSocketData();
                         sks.ClientDispose = true;//如果出现异常,标识客户端下线
-                        sks.ex = new Exception("客户端无连接");
+                        sks.Ex = new Exception("客户端无连接");
                         pushSockets.Invoke(sks);//推送至UI
                     }
                 }
             }
             catch (Exception skex)
             {
-                SSocketData sks = new SSocketData();
-                sks.ClientDispose = true;//如果出现异常,标识客户端退出
-                sks.ex = skex;
-                if (pushSockets != null)
+                SSocketData sks = new SSocketData
                 {
-                    pushSockets.Invoke(sks);//推送至UI
-                }
+                    ClientDispose = true,//如果出现异常,标识客户端退出
+                    Ex = skex
+                };
+                pushSockets?.Invoke(sks);//推送至UI
             }
         }
 
@@ -387,7 +387,7 @@ namespace SuperNetwork.SuperWebSocket
             if (payload_len == 126)
             {
                 Array.Copy(recBytes, 4, masks, 0, 4);
-                payload_len = (UInt16)(recBytes[2] << 8 | recBytes[3]);
+                payload_len = (ushort)(recBytes[2] << 8 | recBytes[3]);
                 payload_data = new byte[payload_len];
                 Array.Copy(recBytes, 8, payload_data, 0, payload_len);
 
@@ -400,10 +400,10 @@ namespace SuperNetwork.SuperWebSocket
                 {
                     uInt64Bytes[i] = recBytes[9 - i];
                 }
-                UInt64 len = BitConverter.ToUInt64(uInt64Bytes, 0);
+                ulong len = BitConverter.ToUInt64(uInt64Bytes, 0);
 
                 payload_data = new byte[len];
-                for (UInt64 i = 0; i < len; i++)
+                for (ulong i = 0; i < len; i++)
                 {
                     payload_data[i] = recBytes[i + 14];
                 }
@@ -510,7 +510,7 @@ namespace SuperNetwork.SuperWebSocket
             /// <summary>
             /// 发生异常时不为null.
             /// </summary>
-            public Exception ex { get; set; }
+            public Exception Ex { get; set; }
             /// <summary>
             /// 异常枚举
             /// </summary>

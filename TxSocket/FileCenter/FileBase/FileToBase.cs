@@ -124,8 +124,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
             {
                 int offset=FS.FindIndex(delegate(FileState state1) { return state1.FileLabel == FileLabel; });
                 FileState state2 = FS[offset];
-                if (state2.Filestream != null)
-                    state2.Filestream.Close();//移除一个文件之后把所有的一切都处理掉
+                state2.Filestream?.Close();//移除一个文件之后把所有的一切都处理掉
                 FS.RemoveAt(offset);
                 try { int offset1 = FS.FindIndex(delegate(FileState state1) { return state1.StateOne == state2.StateOne; }); }
                 catch
@@ -194,7 +193,7 @@ namespace SuperNetwork.TxSocket.FileCenter.FileBase
        /// </summary>
         /// <param name="state">FileState</param>
         /// <param name="SendMust">IFileSendMust</param>
-        internal void FileStopIn(FileState state, IFileMustBase SendMust)
+        internal static void FileStopIn(FileState state, IFileMustBase SendMust)
         {
             if (state.StateFile != 2)
             {

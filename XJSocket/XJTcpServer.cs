@@ -16,7 +16,7 @@ namespace SuperNetwork.XJSocket
     {
         #region 推送器 加密
         public delegate void PushSockets(Sockets sockets);
-        public static PushSockets pushSockets;
+        static PushSockets pushSockets;
         #endregion
 
         bool IsStop = false;
@@ -107,9 +107,11 @@ namespace SuperNetwork.XJSocket
             }
             catch (SocketException skex)
             {
-                Sockets sks = new Sockets();
-                sks.ex = skex;
-                pushSockets.Invoke(sks);//推送至UI
+                Sockets sks = new Sockets
+                {
+                    ex = skex
+                };
+                pushSockets?.Invoke(sks);//推送至UI
 
             }
         }
@@ -125,12 +127,14 @@ namespace SuperNetwork.XJSocket
                 //维护客户端队列
                 Socket socket = tclient.Client;
                 NetworkStream stream = new NetworkStream(socket, true); //承载这个Socket
-                Sockets sks = new Sockets(tclient.Client.RemoteEndPoint as IPEndPoint, tclient, stream);
-                sks.NewClientFlag = true;
+                Sockets sks = new Sockets(tclient.Client.RemoteEndPoint as IPEndPoint, tclient, stream)
+                {
+                    NewClientFlag = true
+                };
                 //加入客户端集合.
                 AddClientList(sks);
                 //推送新客户端
-                pushSockets.Invoke(sks);
+                pushSockets?.Invoke(sks);
                 //客户端异步接收
                 sks.nStream.BeginRead(sks.RecBuffer, 0, sks.RecBuffer.Length, new AsyncCallback(EndReader), sks);
                 //主动向客户端发送一条连接成功信息 
@@ -144,13 +148,12 @@ namespace SuperNetwork.XJSocket
             catch (Exception exs)
             {
                 semap.Release();
-                Sockets sk = new Sockets();
-                sk.ClientDispose = true;//客户端退出
-                sk.ex = new Exception(exs.ToString() + "新连接监听出现异常");
-                if (pushSockets != null)
+                Sockets sk = new Sockets
                 {
-                    pushSockets.Invoke(sk);//推送至UI
-                }
+                    ClientDispose = true,//客户端退出
+                    ex = new Exception(exs.ToString() + "新连接监听出现异常")
+                };
+                pushSockets?.Invoke(sk);//推送至UI
             }
         }
         /// <summary>
@@ -159,8 +162,7 @@ namespace SuperNetwork.XJSocket
         /// <param name="ir"></param>
         private void EndReader(IAsyncResult ir)
         {
-            Sockets sks = ir.AsyncState as Sockets;
-            if (sks != null && listener != null)
+            if (ir.AsyncState is Sockets sks && listener != null)
             {
                 try
                 {
@@ -168,7 +170,7 @@ namespace SuperNetwork.XJSocket
                     {
                         sks.NewClientFlag = false;
                         sks.Offset = sks.nStream.EndRead(ir);
-                        pushSockets.Invoke(sks);//推送至UI
+                        pushSockets?.Invoke(sks);//推送至UI
                         sks.nStream.BeginRead(sks.RecBuffer, 0, sks.RecBuffer.Length, new AsyncCallback(EndReader), sks);
                     }
                 }
@@ -181,7 +183,7 @@ namespace SuperNetwork.XJSocket
                         Sockets sk = sks;
                         sk.ClientDispose = true;//客户端退出
                         sk.ex = skex;
-                        pushSockets.Invoke(sks);//推送至UI
+                        pushSockets?.Invoke(sks);//推送至UI
                     }
                 }
             }
@@ -279,16 +281,18 @@ namespace SuperNetwork.XJSocket
                         //没有连接时,标识退出 
                         sks.ClientDispose = true;//如果出现异常,标识客户端下线
                         sks.ex = new Exception("客户端无连接");
-                        pushSockets.Invoke(sks);//推送至UI
+                        pushSockets?.Invoke(sks);//推送至UI
                     }
                 }
             }
             catch (Exception skex)
             {
-                Sockets sks = new Sockets();
-                sks.ClientDispose = true;//如果出现异常,标识客户端退出
-                sks.ex = skex;
-                pushSockets.Invoke(sks);//推送至UI
+                Sockets sks = new Sockets
+                {
+                    ClientDispose = true,//如果出现异常,标识客户端退出
+                    ex = skex
+                };
+                pushSockets?.Invoke(sks);//推送至UI
 
             }
         }
@@ -336,19 +340,18 @@ namespace SuperNetwork.XJSocket
                         Sockets ks = new Sockets();
                         sks.ClientDispose = true;//如果出现异常,标识客户端下线
                         sks.ex = new Exception("客户端无连接");
-                        pushSockets.Invoke(sks);//推送至UI
+                        pushSockets?.Invoke(sks);//推送至UI
                     }
                 }
             }
             catch (Exception skex)
             {
-                Sockets sks = new Sockets();
-                sks.ClientDispose = true;//如果出现异常,标识客户端退出
-                sks.ex = skex;
-                if (pushSockets != null)
+                Sockets sks = new Sockets
                 {
-                    pushSockets.Invoke(sks);//推送至UI
-                }
+                    ClientDispose = true,//如果出现异常,标识客户端退出
+                    ex = skex
+                };
+                pushSockets?.Invoke(sks);//推送至UI
             }
         }
     }

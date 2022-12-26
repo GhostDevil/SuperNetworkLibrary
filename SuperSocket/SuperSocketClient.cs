@@ -1,6 +1,6 @@
 ﻿using SuperSocket.ClientEngine;
 
-namespace SuperNetwork
+namespace SuperNetwork.SuperSocket
 {
     public class SuperSocketClient
     {

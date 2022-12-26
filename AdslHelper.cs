@@ -73,7 +73,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = GetErrorString(nErrorValue);
+            strError = AdslHelper.GetErrorString(nErrorValue);
             return false;
         }
 
@@ -91,7 +91,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = GetErrorString(nErrorValue);
+            strError = AdslHelper.GetErrorString(nErrorValue);
             return false;
         }
 
@@ -111,7 +111,7 @@ namespace SuperNetwork
             int nErrorValue = RasGetEntryDialParams(null, ref structure, ref lpfPassword);
             if (nErrorValue != 0)
             {
-                strError = GetErrorString(nErrorValue);
+                strError = AdslHelper.GetErrorString(nErrorValue);
                 return false;
             }
             ConnectNotify("正在连接" + structure.szEntryName + "...", 1);
@@ -120,7 +120,7 @@ namespace SuperNetwork
             nErrorValue = RasDial(0, null, ref structure, 0, lpvNotifier, ref hrasconn);
             if (nErrorValue != 0)
             {
-                strError = GetErrorString(nErrorValue);
+                strError = AdslHelper.GetErrorString(nErrorValue);
                 ConnectNotify(strError, 3);
                 return false;
             }
@@ -144,7 +144,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = GetErrorString(nErrorValue);
+            strError = AdslHelper.GetErrorString(nErrorValue);
             return false;
         }
         /// <summary>
@@ -153,7 +153,7 @@ namespace SuperNetwork
         /// <param name="strEntry">条目</param>
         /// <param name="strError">错误</param>
         /// <returns>结果</returns>
-        public bool GetDefaultEntry(out string strEntry, out string strError)
+        public static bool GetDefaultEntry(out string strEntry, out string strError)
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE/Microsoft/RAS AutoDial/Default");
             if (key != null)
@@ -195,14 +195,14 @@ namespace SuperNetwork
                     break;
 
                 default:
-                    strError = GetErrorString(nErrorValue);
+                    strError = AdslHelper.GetErrorString(nErrorValue);
                     strEntryName = null;
                     return false;
             }
             nErrorValue = RasEnumEntries(null, null, lprasentryname, ref lpcb, ref lpcEntries);
             if (nErrorValue != 0)
             {
-                strError = GetErrorString(nErrorValue);
+                strError = AdslHelper.GetErrorString(nErrorValue);
                 strEntryName = null;
                 return false;
             }
@@ -234,7 +234,7 @@ namespace SuperNetwork
             int nErrorValue = RasGetEntryDialParams(null, ref structure, ref lpfPassword);
             if (nErrorValue != 0)
             {
-                strError = GetErrorString(nErrorValue);
+                strError = AdslHelper.GetErrorString(nErrorValue);
                 strPhoneNumber = null;
                 strUserName = null;
                 strPassword = null;
@@ -262,7 +262,7 @@ namespace SuperNetwork
         /// </summary>
         /// <param name="nErrorValue"></param>
         /// <returns></returns>
-        internal string GetErrorString(int nErrorValue)
+        internal static string GetErrorString(int nErrorValue)
         {
             if ((nErrorValue >= 600) && (nErrorValue < 0x2f2))
             {
@@ -293,7 +293,7 @@ namespace SuperNetwork
                 int nErrorValue = RasHangUp(hrasconn);
                 if (nErrorValue != 0)
                 {
-                    strError = GetErrorString(nErrorValue);
+                    strError = AdslHelper.GetErrorString(nErrorValue);
                     ConnectNotify(strError, 0);
                     return false;
                 }
@@ -305,7 +305,7 @@ namespace SuperNetwork
                     int num2 = RasHangUp(rasconn.hrasconn);
                     if (num2 != 0)
                     {
-                        strError = GetErrorString(num2);
+                        strError = AdslHelper.GetErrorString(num2);
                         ConnectNotify(strError, 0);
                         return false;
                     }
@@ -332,7 +332,7 @@ namespace SuperNetwork
         {
             if (dwError != 0)
             {
-                ConnectNotify(GetErrorString(dwError), 3);
+                ConnectNotify(AdslHelper.GetErrorString(dwError), 3);
                 bConnected = false;
                 if (hrasconn != 0)
                 {
@@ -343,7 +343,7 @@ namespace SuperNetwork
                     }
                     else
                     {
-                        ConnectNotify(GetErrorString(nErrorValue), 0);
+                        ConnectNotify(AdslHelper.GetErrorString(nErrorValue), 0);
                     }
                 }
             }
@@ -402,7 +402,7 @@ namespace SuperNetwork
                 strError = null;
                 return true;
             }
-            strError = GetErrorString(nErrorValue);
+            strError = AdslHelper.GetErrorString(nErrorValue);
             return false;
         }
 
@@ -410,15 +410,12 @@ namespace SuperNetwork
         /// 设置默认条目
         /// </summary>
         /// <param name="strEntry"></param>
-        public void SetDefaultEntry(string strEntry)
+        public static void SetDefaultEntry(string strEntry)
         {
             if ((strEntry != null) && (strEntry.Length > 0))
             {
                 RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE/Microsoft/RAS AutoDial/Default", true);
-                if (key == null)
-                {
-                    key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE/Microsoft/RAS AutoDial/Default");
-                }
+                key ??= Registry.LocalMachine.CreateSubKey(@"SOFTWARE/Microsoft/RAS AutoDial/Default");
                 key.SetValue("DefaultInternet", strEntry);
             }
         }
@@ -444,7 +441,7 @@ namespace SuperNetwork
             int nErrorValue = RasSetEntryDialParams(null, ref structure, !bRememberPassword);
             if (nErrorValue != 0)
             {
-                strError = GetErrorString(nErrorValue);
+                strError = AdslHelper.GetErrorString(nErrorValue);
                 return false;
             }
             strError = null;
@@ -475,12 +472,12 @@ namespace SuperNetwork
                     break;
 
                 default:
-                    ConnectNotify(GetErrorString(nErrorValue), 3);
+                    ConnectNotify(AdslHelper.GetErrorString(nErrorValue), 3);
                     return;
             }
             if (nErrorValue != 0)
             {
-                ConnectNotify(GetErrorString(nErrorValue), 3);
+                ConnectNotify(AdslHelper.GetErrorString(nErrorValue), 3);
             }
             else if ((lpcConnections < 1) && bConnected)
             {
@@ -494,7 +491,7 @@ namespace SuperNetwork
                     nErrorValue = RasGetConnectStatus(Rasconn[i].hrasconn, ref structure);
                     if (nErrorValue != 0)
                     {
-                        ConnectNotify(GetErrorString(nErrorValue), 3);
+                        ConnectNotify(AdslHelper.GetErrorString(nErrorValue), 3);
                         return;
                     }
                     if ((structure.rasconnstate == RASCONNSTATE.RASCS_Connected) && !bConnected)

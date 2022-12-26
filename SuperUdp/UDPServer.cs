@@ -126,7 +126,7 @@ namespace SuperNetwork.SuperUdp
         /// </summary>
         /// <param name="bytes">16进制字节</param>
         /// <returns>返回16进制字符串</returns>
-        public string ToHexString(byte[] bytes) // 0xae00cf => "AE00CF "
+        public static string ToHexString(byte[] bytes) // 0xae00cf => "AE00CF "
         {
             string hexString = string.Empty;
             if (bytes != null)

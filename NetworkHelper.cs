@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
@@ -132,7 +134,7 @@ namespace SuperNetwork
                 {
                     if (i == 5)
                     {
-                        macAddress.Append(temp.Substring(x - 2, 2));
+                        macAddress.Append(temp.AsSpan(x - 2, 2));
                     }
                     else
                     {
@@ -203,7 +205,7 @@ namespace SuperNetwork
             ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
             ManagementObjectCollection moc = mc.GetInstances();
             string macAddrStr = string.Empty;
-            foreach (ManagementObject mo in moc)
+            foreach (ManagementObject mo in moc.Cast<ManagementObject>())
             {
                 if ((bool)mo["IPEnabled"] == true)
                 {
@@ -254,7 +256,7 @@ namespace SuperNetwork
                 mac3 = originalMACAddress.Substring(6, 2);
                 mac4 = originalMACAddress.Substring(4, 2);
                 mac5 = originalMACAddress.Substring(2, 2);
-                mac6 = originalMACAddress.Substring(0, 2);
+                mac6 = originalMACAddress[..2];
                 macAddress = mac1 + "-" + mac2 + "-" + mac3 + "-" + mac4 + "-" + mac5 + "-" + mac6;
             }
             else
@@ -307,7 +309,7 @@ namespace SuperNetwork
         /// <summary>
         /// 获取本机的局域网IP
         /// </summary>        
-        private string GetLocalIp()
+        private static string GetLocalIp()
         {
 
             //获取本机的IP列表,IP列表中的第一项是局域网IP，第二项是广域网IP
@@ -328,7 +330,7 @@ namespace SuperNetwork
             ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
             ManagementObjectCollection nics = mc.GetInstances();
             string ip = "";
-            foreach (ManagementObject nic in nics)
+            foreach (ManagementObject nic in nics.Cast<ManagementObject>())
                 if (Convert.ToBoolean(nic["ipEnabled"]) == true)
                     ip = (nic["IPAddress"] as string[])[0];
             return ip;
@@ -462,9 +464,11 @@ namespace SuperNetwork
         /// <returns></returns>
         public static bool Execute(string command, string NameOrIP, string selfaAdminName, string adminPwd)
         {
-            ConnectionOptions op = new ConnectionOptions();
-            op.Username = selfaAdminName;//或者你的帐号（注意要有管理员的权限）
-            op.Password = adminPwd; //你的密码
+            ConnectionOptions op = new ConnectionOptions
+            {
+                Username = selfaAdminName,//或者你的帐号（注意要有管理员的权限）
+                Password = adminPwd //你的密码
+            };
             ManagementScope scope = new ManagementScope(@"\\" + NameOrIP + "\\root\\cimv2", op);
             try
             {
@@ -473,7 +477,7 @@ namespace SuperNetwork
                 ManagementObjectSearcher query1 = new ManagementObjectSearcher(scope, oq);
                 //得到WMI控制 
                 ManagementObjectCollection queryCollection1 = query1.Get();
-                foreach (ManagementObject mobj in queryCollection1)
+                foreach (ManagementObject mobj in queryCollection1.Cast<ManagementObject>())
                 {
                     string[] str = { "" };
                     mobj.InvokeMethod(command, str);//执行命令
@@ -690,7 +694,7 @@ namespace SuperNetwork
                     conname = rk.GetValue("Name", "").ToString();
                     int fMediaSubType = Convert.ToInt32(rk.GetValue("MediaSubType", 0));
                     if (fPnpInstanceID.Length > 3 &&
-                        fPnpInstanceID.Substring(0, 3) == "PCI")
+                        fPnpInstanceID[..3] == "PCI")
                         fCardType = NetworkCardType.Physical;
                     else if (fMediaSubType == 1)
                         fCardType = NetworkCardType.Virtual;
@@ -755,7 +759,7 @@ namespace SuperNetwork
                     // 如果前面有 PCI 就是本机的真实网卡  
                     string fPnpInstanceID = rk.GetValue("PnpInstanceID", "").ToString();
                     int fMediaSubType = Convert.ToInt32(rk.GetValue("MediaSubType", 0));
-                    if (fPnpInstanceID.Length > 3 && fPnpInstanceID.Substring(0, 3) == "PCI")
+                    if (fPnpInstanceID.Length > 3 && fPnpInstanceID[..3] == "PCI")
                     {
                         IPInterfaceProperties fIPInterfaceProperties = adapter.GetIPProperties();
                         UnicastIPAddressInformationCollection UnicastIPAddressInformationCollection = fIPInterfaceProperties.UnicastAddresses;

@@ -479,9 +479,11 @@ namespace SuperNetwork
             email.IsBodyHtml = true;
 
             //创建SMTP客户端，将自动从配置文件中获取SMTP服务器信息
-            SmtpClient smtp = new SmtpClient();
-            //开启SSL
-            smtp.EnableSsl = IsEnableSSL;
+            SmtpClient smtp = new SmtpClient
+            {
+                //开启SSL
+                EnableSsl = IsEnableSSL
+            };
 
             try
             {

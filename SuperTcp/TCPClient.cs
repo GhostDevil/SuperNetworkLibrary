@@ -123,7 +123,7 @@ namespace SuperNetwork.SuperTcp
         /// <summary>
         /// TcpClient客户端
         /// </summary>
-        public TcpClient Tcpclient { set; get; } = null;
+        public TcpClient TcpClient { set; get; } = null;
 
         /// <summary>
         /// Tcp客户端连接线程
@@ -152,7 +152,7 @@ namespace SuperNetwork.SuperTcp
         /// <summary>
         /// 当前连接状态
         /// </summary>
-        public TCPSocketEnum.SocketState socketState { get; set; }
+        public TCPSocketEnum.SocketState SocketState { get; set; }
         #endregion
 
         #region  启动连接Socket连接 
@@ -186,7 +186,7 @@ namespace SuperNetwork.SuperTcp
                 return;
             //标示已启动连接，防止重复启动线程
             IsClosed = true;
-            Tcpclient = new TcpClient();
+            TcpClient = new TcpClient();
             Tcpthread = new Thread(StartTcpThread);
             IsStartTcpthreading = true;
             Tcpthread.Start();
@@ -203,7 +203,7 @@ namespace SuperNetwork.SuperTcp
                 while (IsStartTcpthreading)
                 #region 
                 {
-                    if (!Tcpclient.Connected)
+                    if (!TcpClient.Connected)
                     {
                         try
                         {
@@ -212,32 +212,30 @@ namespace SuperNetwork.SuperTcp
                             if (ReConectedCount != 0)
                             {
                                 //返回状态信息
-                                socketState = TCPSocketEnum.SocketState.Reconnection;
+                                SocketState = TCPSocketEnum.SocketState.Reconnection;
                                 OnStateInfo?.Invoke(string.Format("正在第 {0} 次重新连接服务器 {1} ... ...", ReConectedCount, ServerIp), TCPSocketEnum.SocketState.Reconnection);
                             }
                             else
                             {
-                                socketState = TCPSocketEnum.SocketState.Connecting;
+                                SocketState = TCPSocketEnum.SocketState.Connecting;
                                 //返回状态信息
                                 OnStateInfo?.Invoke(string.Format("正在连接服务器 {0} ... ...", ServerIp), TCPSocketEnum.SocketState.Connecting);
                             }
                             if(ServerIp!="")
-                                Tcpclient.Connect(IPAddress.Parse(ServerIp), ServerPort);
+                                TcpClient.Connect(IPAddress.Parse(ServerIp), ServerPort);
                             else
-                                Tcpclient.Connect(IPAddress.Any, ServerPort);
+                                TcpClient.Connect(IPAddress.Any, ServerPort);
 
-                            socketState = TCPSocketEnum.SocketState.Connected;
+                            SocketState = TCPSocketEnum.SocketState.Connected;
                             OnStateInfo?.Invoke(string.Format("已成功连接服务器 {0} !!!", ServerIp), TCPSocketEnum.SocketState.Connected);
                             ReConectedCount = 1;
-                            if (CheckState != null)
-                                CheckState.Start();
+                            CheckState?.Start();
 
                             //Tcpclient.Client.Send(Encoding.Default.GetBytes("login"));
                         }
                         catch
                         {
-                            if (CheckState != null)
-                                CheckState.Stop();
+                            CheckState?.Stop();
                             //连接失败
                             ReConectedCount++;
                             //强制重新连接
@@ -249,15 +247,14 @@ namespace SuperNetwork.SuperTcp
                         }
                     }
                     //Tcpclient.Client.Send(Encoding.Default.GetBytes("login"));
-                    bytelen = Tcpclient.Client.Receive(receivebyte);
+                    bytelen = TcpClient.Client.Receive(receivebyte);
                     // 连接断开
                     if (bytelen == 0)
                     {
-                        socketState = TCPSocketEnum.SocketState.Disconnect;
+                        SocketState = TCPSocketEnum.SocketState.Disconnect;
                         //返回状态信息
                         OnStateInfo?.Invoke(string.Format("与服务器 {0} 断开连接!!!", ServerIp), TCPSocketEnum.SocketState.Disconnect);
-                        if (CheckState!=null)
-                            CheckState.Stop();
+                        CheckState?.Stop();
                         // 异常退出、强制重新连接
                         IsClosed = false;
                         ReConectedCount = 1;
@@ -270,7 +267,7 @@ namespace SuperNetwork.SuperTcp
                         byte[] recvMsg = new byte[bytelen];
                         Array.ConstrainedCopy(receivebyte, 0, recvMsg, 0, bytelen);
                         //接收数据
-                        OnReceviceByte?.Invoke(Tcpclient.Client, recvMsg, bytelen);
+                        OnReceviceByte?.Invoke(TcpClient.Client, recvMsg, bytelen);
                     }
                 }
                 #endregion
@@ -291,7 +288,7 @@ namespace SuperNetwork.SuperTcp
         private bool CheckSocketStatus()
         {
             bool ret = true;
-            if (Tcpclient == null)
+            if (TcpClient == null)
                 return false;
             //if(HeardbeatData=="")
             //    ret =SendData("#Chenck&&state！#");
@@ -331,18 +328,17 @@ namespace SuperNetwork.SuperTcp
         /// </summary>
         public bool StopConnection()
         {
-            if (CheckState != null)
-                CheckState.Stop();
+            CheckState?.Stop();
             IsStartTcpthreading = false;
             IsClosed = true;
             try
             {
                 //关闭连接
-                if (Tcpclient != null)
+                if (TcpClient != null)
                 {
-                    Tcpclient.Close();
+                    TcpClient.Close();
                     //Tcpclient.Dispose();
-                    Tcpclient = null;
+                    TcpClient = null;
 
                     Tcpthread.Interrupt();
                     //关闭线程
@@ -389,7 +385,7 @@ namespace SuperNetwork.SuperTcp
         {
             try
             {
-                if (Tcpclient == null) return false;
+                if (TcpClient == null) return false;
                 //if (!Tcpclient.Connected) return false;
                 byte[] _out = Encoding.UTF8.GetBytes(text);
                 //Tcpclient.Client.Send(_out);
@@ -411,9 +407,9 @@ namespace SuperNetwork.SuperTcp
         {
             try
             {
-                if (Tcpclient == null)
+                if (TcpClient == null)
                     return false;
-                Tcpclient.Client.Send(byteMsg);
+                TcpClient.Client.Send(byteMsg);
                 return true;
             }
             catch (Exception ex)

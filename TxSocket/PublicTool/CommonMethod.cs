@@ -93,7 +93,7 @@ namespace SuperNetwork.TxSocket.PublicTool
         internal static string StringRight(string AllDate,string offstr)
         {
             int lastoff = AllDate.LastIndexOf(offstr)+offstr.Length;
-            string haveString = AllDate.Substring(lastoff, AllDate.Length - lastoff);
+            string haveString = AllDate[lastoff..];
             return haveString;
         }
        /// <summary>
@@ -118,7 +118,7 @@ namespace SuperNetwork.TxSocket.PublicTool
         internal static string Between(string str, string leftstr, string rightstr)
         {
             int i = str.IndexOf(leftstr) + leftstr.Length;
-            string temp = str.Substring(i, str.IndexOf(rightstr, i) - i);
+            string temp = str[i..str.IndexOf(rightstr, i)];
             return temp;
         }
        /// <summary>

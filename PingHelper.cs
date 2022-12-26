@@ -57,14 +57,15 @@ namespace SuperNetwork
                 EndPoint EndPointFrom = (ipEndPointFrom);
 
                 int PacketSize = 0;
-                IcmpPacket packet = new IcmpPacket();
-
-                // 构建要发送的包 
-                packet.Type = ICMP_ECHO; //8 
-                packet.SubCode = 0;
-                packet.CheckSum = 0;
-                packet.Identifier = 45;
-                packet.SequenceNumber = 0;
+                IcmpPacket packet = new IcmpPacket
+                {
+                    // 构建要发送的包 
+                    Type = ICMP_ECHO, //8 
+                    SubCode = 0,
+                    CheckSum = 0,
+                    Identifier = 45,
+                    SequenceNumber = 0
+                };
                 int PingData = 24; // sizeof(IcmpPacket) - 8; 
                 packet.Data = new byte[PingData];
 
@@ -475,13 +476,13 @@ namespace SuperNetwork
             Dictionary<string, string> dic = new Dictionary<string, string>();
             StreamReader reader = p.StandardOutput;//读取ip。mac。。。。
             //string IPHead = Dns.GetHostByName(Dns.GetHostName()).AddressList[0].ToString().Substring(0, 3);
-            string IPHead = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0].ToString().Substring(0, 3);
+            string IPHead = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0].ToString()[..3];
             //首先循环ping一下网段的主机。
             for (string line = reader.ReadLine(); line != null; line = reader.ReadLine())
             {
                 line = line.Trim(); if (line.StartsWith(IPHead) && (line.IndexOf("动态") != -1))
                 {
-                    string IP = line.Substring(0, 15).Trim();
+                    string IP = line[..15].Trim();
                     string Mac = line.Substring(line.IndexOf("-") - 2, 0x11).Trim();
                     dic.Add(IP, Mac);
                 }

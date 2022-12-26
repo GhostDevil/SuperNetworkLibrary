@@ -93,39 +93,42 @@ namespace SuperNetwork.XJSocket
                 {
                     if (client.Connected)
                     {
-                        if (nStream == null)
-                        {
-                            nStream = client.GetStream();
-                        }
+                        nStream ??= client.GetStream();
                         byte[] buffer = sendData;
                         nStream.Write(buffer, 0, buffer.Length);
 
                     }
                     else
                     {
-                        Sockets sks = new Sockets();
-                        sks.ErrorCode = Sockets.ErrorCodes.TrySendData;
-                        sks.ex = new Exception("客户端发送时无连接,开始进行重连上端..");
-                        sks.ClientDispose = true;
+                        Sockets sks = new Sockets
+                        {
+                            ErrorCode = Sockets.ErrorCodes.TrySendData,
+                            ex = new Exception("客户端发送时无连接,开始进行重连上端.."),
+                            ClientDispose = true
+                        };
                         pushSockets.Invoke(sks);//推送至UI
                         RestartInit();
                     }
                 }
                 else
                 {
-                    Sockets sks = new Sockets();
-                    sks.ErrorCode = Sockets.ErrorCodes.TrySendData;
-                    sks.ex = new Exception("客户端无连接..");
-                    sks.ClientDispose = true;
+                    Sockets sks = new Sockets
+                    {
+                        ErrorCode = Sockets.ErrorCodes.TrySendData,
+                        ex = new Exception("客户端无连接.."),
+                        ClientDispose = true
+                    };
                     pushSockets.Invoke(sks);//推送至UI 
                 }
             }
             catch (Exception skex)
             {
-                Sockets sks = new Sockets();
-                sks.ErrorCode = Sockets.ErrorCodes.TrySendData;
-                sks.ex = new Exception("客户端出现异常,开始重连上端..异常信息:" + skex.Message);
-                sks.ClientDispose = true;
+                Sockets sks = new Sockets
+                {
+                    ErrorCode = Sockets.ErrorCodes.TrySendData,
+                    ex = new Exception("客户端出现异常,开始重连上端..异常信息:" + skex.Message),
+                    ClientDispose = true
+                };
                 pushSockets.Invoke(sks);//推送至UI
                 RestartInit();
             }

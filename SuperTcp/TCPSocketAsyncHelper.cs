@@ -254,8 +254,10 @@ namespace SuperNetwork.SuperTcp
         {
 
             //开始接收数据
-            StateObject state = new StateObject();
-            state.workSocket = m_socket;
+            StateObject state = new StateObject
+            {
+                workSocket = m_socket
+            };
 
             m_socket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), state);
 

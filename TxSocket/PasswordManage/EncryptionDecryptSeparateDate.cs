@@ -18,9 +18,11 @@ namespace SuperNetwork.TxSocket.PasswordManage
        /// <returns>加密之后的包头</returns>
        internal static byte[] SendHeadEncryption(byte[] date, byte textCode, StateBase state)
        {
-           state.SendFile = new FileBase(date);
-           state.SendFile.FileLabel = RandomPublic.RandomNumber(14562);
-           byte[] headDate = new byte[11];
+            state.SendFile = new FileBase(date)
+            {
+                FileLabel = RandomPublic.RandomNumber(14562)
+            };
+            byte[] headDate = new byte[11];
            headDate[0] = PasswordCode._bigDateCode; headDate[1] = PasswordCode._fileHeadCode; headDate[2] = textCode;
            ByteToData.IntToByte(state.SendFile.FileLabel, 3, headDate);
            ByteToData.IntToByte(date.Length, 7, headDate);

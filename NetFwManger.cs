@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Runtime.Versioning;
 using NetFwTypeLib;//COM+ 组件 NetFwTypeLib
 
 namespace SuperNetwork

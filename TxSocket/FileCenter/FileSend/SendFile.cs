@@ -42,8 +42,10 @@ namespace SuperNetwork.TxSocket.FileCenter.FileSend
             }
             catch(Exception Ex) { throw new Exception(Ex.Message); }
             fileLable = RandomPublic.RandomNumber(16787);
-            FileState fileState = new FileState(fileLable, fileLenth, fileName, fs);
-            fileState.StateOne = stateOne;
+            FileState fileState = new FileState(fileLable, fileLenth, fileName, fs)
+            {
+                StateOne = stateOne
+            };
             FS.Add(fileState);
             byte[] haveByte = EncryptionDecryptFile.FileHeadEncryption(fileState);
             return haveByte;

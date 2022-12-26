@@ -71,8 +71,7 @@ namespace SuperNetwork.TxSocket
         /// <param name="port">端口号</param>
         internal TxSocketServer(int port)
         {Port = port;
-        if(state==null)
-            state = new List<TxTcpState>();
+        state ??= new List<TxTcpState>();
         }
         #endregion
         #region 启动以及接收客户端区块
@@ -89,8 +88,10 @@ namespace SuperNetwork.TxSocket
                 listener.Bind(IpEndPoint);
                 listener.Listen(200);
                 listener.BeginAccept(new AsyncCallback(AcceptCallback), listener);
-                HeartThread = new Thread(heartThread);
-                HeartThread.IsBackground = true;
+                HeartThread = new Thread(heartThread)
+                {
+                    IsBackground = true
+                };
                 HeartThread.Start();//把心跳方法加入到线程里面
                 _engineStart = true;//启动成功
                 FileOperate("服务器启动成功,交流QQ群：426414437");//记录
@@ -123,9 +124,11 @@ namespace SuperNetwork.TxSocket
             Socket Listener = (Socket)ar.AsyncState;
             Socket handler = listener.EndAccept(ar);
             stateOne = new TxTcpState(handler,BufferSize);
-            Thread threadLongin = new Thread(loginInitialization);
-            threadLongin.IsBackground = true;
-            threadLongin.Start(stateOne);//启动客户验证系统
+                Thread threadLongin = new Thread(loginInitialization)
+                {
+                    IsBackground = true
+                };
+                threadLongin.Start(stateOne);//启动客户验证系统
             }
             catch
             {
@@ -327,13 +330,11 @@ namespace SuperNetwork.TxSocket
         {
             try
             { 
-                if (HeartThread != null)
-                    HeartThread.Abort();
+                HeartThread?.Abort();
                 HeartThread = null;
                 clientAllClose();
                 state = null;
-                if (listener != null)
-                    listener.Close();
+                listener?.Close();
                 listener = null;
                 OnEngineClose();
                 FileOperate("服务器已突然断掉");//记录

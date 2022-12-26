@@ -61,8 +61,10 @@ namespace SuperNetwork.TxSocket
         {
             if (_engineStart)
                 return;
-            startThread = new Thread(Start);
-            startThread.IsBackground = true;
+            startThread = new Thread(Start)
+            {
+                IsBackground = true
+            };
             startThread.Start();
         }
         /// <summary>
@@ -74,8 +76,10 @@ namespace SuperNetwork.TxSocket
                 Thread.Sleep(9000 + RandomPublic.RandomTime(1000));
             try
             {
-                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                socket.SendTimeout = 1000;
+                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+                {
+                    SendTimeout = 1000
+                };
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.NoDelay, true);
                 socket.BeginConnect(IpEndPoint, new AsyncCallback(AcceptCallback), socket);
                 LoginTimeout(socket);//超时判断方法
@@ -174,8 +178,10 @@ namespace SuperNetwork.TxSocket
             _engineStart = true;
             if (heartThread == null)
             {//连接成功之后启动心跳线程
-                heartThread = new Thread(HeartThread);
-                heartThread.IsBackground = true;
+                heartThread = new Thread(HeartThread)
+                {
+                    IsBackground = true
+                };
                 heartThread.Start();
             }
             if (reconnectOn)

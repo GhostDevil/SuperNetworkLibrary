@@ -279,20 +279,20 @@ namespace SuperNetwork.SuperTcp
         /// <summary>
         /// 接收到数据报文事件
         /// </summary>
-        public event EventHandler<TcpDatagramReceivedEventArgs<byte[]>> DatagramReceived;
+        public event EventHandler<TCPDatagramReceivedEventArgs<byte[]>> DatagramReceived;
         /// <summary>
         /// 接收到数据报文明文事件
         /// </summary>
-        public event EventHandler<TcpDatagramReceivedEventArgs<string>> PlaintextReceived;
+        public event EventHandler<TCPDatagramReceivedEventArgs<string>> PlaintextReceived;
 
         private void RaiseDatagramReceived(TcpClient sender, byte[] datagram)
         {
-            DatagramReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<byte[]>(sender, datagram));
+            DatagramReceived?.Invoke(this, new TCPDatagramReceivedEventArgs<byte[]>(sender, datagram));
         }
 
         private void RaisePlaintextReceived(TcpClient sender, byte[] datagram)
         {
-            PlaintextReceived?.Invoke(this, new TcpDatagramReceivedEventArgs<string>(sender, Encoding.GetString(datagram, 0, datagram.Length)));
+            PlaintextReceived?.Invoke(this, new TCPDatagramReceivedEventArgs<string>(sender, Encoding.GetString(datagram, 0, datagram.Length)));
         }
 
         /// <summary>
@@ -334,7 +334,7 @@ namespace SuperNetwork.SuperTcp
         public void Send(byte[] datagram)
         {
             if (datagram == null)
-                throw new ArgumentNullException("datagram");
+                throw new ArgumentNullException(nameof(datagram));
 
             if (!Connected)
             {
@@ -473,10 +473,7 @@ namespace SuperNetwork.SuperTcp
         /// <param name="port">服务器端口</param>
         public TcpServerConnectedEventArgs(IPAddress[] ipAddresses, int port)
         {
-            if (ipAddresses == null)
-                throw new ArgumentNullException("ipAddresses");
-
-            Addresses = ipAddresses;
+            Addresses = ipAddresses ?? throw new ArgumentNullException("ipAddresses");
             Port = port;
         }
 
@@ -522,10 +519,7 @@ namespace SuperNetwork.SuperTcp
         /// <param name="port">服务器端口</param>
         public TcpServerDisconnectedEventArgs(IPAddress[] ipAddresses, int port)
         {
-            if (ipAddresses == null)
-                throw new ArgumentNullException("ipAddresses");
-
-            Addresses = ipAddresses;
+            Addresses = ipAddresses ?? throw new ArgumentNullException(nameof(ipAddresses));
             Port = port;
         }
 

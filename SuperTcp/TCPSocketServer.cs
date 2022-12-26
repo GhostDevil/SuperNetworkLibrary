@@ -316,13 +316,11 @@ namespace SuperNetwork.SuperTcp
             Socket socket = ResoultSocket(ip, port);
             try
             {
-                if (socket != null)
-                    socket.Send((Encoding.UTF8.GetBytes(strData)));
+                socket?.Send((Encoding.UTF8.GetBytes(strData)));
             }
             catch (SocketException ex)
             {
-                if (socket != null)
-                    socket.Shutdown(SocketShutdown.Both);
+                socket?.Shutdown(SocketShutdown.Both);
                 //if (OnExceptionMsg != null)
                 //    OnExceptionMsg(ex.Message);
                 OnExceptionMsg?.Invoke("异常消息：" + ex.Message);
@@ -339,13 +337,11 @@ namespace SuperNetwork.SuperTcp
             Socket socket = ResoultSocket(ip, port);
             try
             {
-                if (socket != null)
-                    socket.Send(strData);
+                socket?.Send(strData);
             }
             catch (SocketException ex)
             {
-                if (socket != null)
-                    socket.Shutdown(SocketShutdown.Both);
+                socket?.Shutdown(SocketShutdown.Both);
                 //if (OnExceptionMsg != null)
                 //    OnExceptionMsg(ex.Message);
                 OnExceptionMsg?.Invoke("异常消息：" + ex.Message);
@@ -419,7 +415,7 @@ namespace SuperNetwork.SuperTcp
         /// <summary>
         /// 获取本机的局域网IP
         /// </summary>        
-        private string GetLocalIp()
+        private static string GetLocalIp()
         {
 
             //获取本机的IP列表,IP列表中的第一项是局域网IP，第二项是广域网IP

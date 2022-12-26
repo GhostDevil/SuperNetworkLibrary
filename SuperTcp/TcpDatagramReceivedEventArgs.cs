@@ -7,14 +7,14 @@ namespace SuperNetwork.SuperTcp
     /// 接收到数据报文事件参数
     /// </summary>
     /// <typeparam name="T">报文类型</typeparam>
-    public class TcpDatagramReceivedEventArgs<T> : EventArgs
+    public class TCPDatagramReceivedEventArgs<T> : EventArgs
     {
         /// <summary>
         /// 接收到数据报文事件参数
         /// </summary>
         /// <param name="tcpClient">客户端</param>
         /// <param name="datagram">报文</param>
-        public TcpDatagramReceivedEventArgs(TcpClient tcpClient, T datagram)
+        public TCPDatagramReceivedEventArgs(TcpClient tcpClient, T datagram)
         {
             TcpClient = tcpClient;
             Datagram = datagram;
