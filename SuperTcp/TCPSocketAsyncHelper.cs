@@ -419,7 +419,7 @@ namespace SuperNetwork.SuperTcp
             /// <summary>
             /// 接收缓冲区大小
             /// </summary>
-            public const int BufferSize = 1024 * 1;
+            public const int BufferSize = 1024 * 2;
             /// <summary>
             /// 接收缓冲区
             /// </summary>

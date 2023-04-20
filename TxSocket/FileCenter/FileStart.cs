@@ -1,5 +1,5 @@
 ﻿using System;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.TxSocket.InternalTool;
 using SuperNetwork.TxSocket.PasswordManage;
 using SuperNetwork.TxSocket.FileCenter.FileSend;
 using SuperNetwork.TxSocket.FileCenter.FileReceive;

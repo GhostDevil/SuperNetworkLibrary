@@ -103,7 +103,7 @@ namespace SuperNetwork.XJSocket
                         Sockets sks = new Sockets
                         {
                             ErrorCode = Sockets.ErrorCodes.TrySendData,
-                            ex = new Exception("客户端发送时无连接,开始进行重连上端.."),
+                            Ex = new Exception("客户端发送时无连接,开始进行重连上端.."),
                             ClientDispose = true
                         };
                         pushSockets.Invoke(sks);//推送至UI
@@ -115,7 +115,7 @@ namespace SuperNetwork.XJSocket
                     Sockets sks = new Sockets
                     {
                         ErrorCode = Sockets.ErrorCodes.TrySendData,
-                        ex = new Exception("客户端无连接.."),
+                        Ex = new Exception("客户端无连接.."),
                         ClientDispose = true
                     };
                     pushSockets.Invoke(sks);//推送至UI 
@@ -126,7 +126,7 @@ namespace SuperNetwork.XJSocket
                 Sockets sks = new Sockets
                 {
                     ErrorCode = Sockets.ErrorCodes.TrySendData,
-                    ex = new Exception("客户端出现异常,开始重连上端..异常信息:" + skex.Message),
+                    Ex = new Exception("客户端出现异常,开始重连上端..异常信息:" + skex.Message),
                     ClientDispose = true
                 };
                 pushSockets.Invoke(sks);//推送至UI
@@ -143,15 +143,15 @@ namespace SuperNetwork.XJSocket
                 client.Connect(ip);
                 nStream = new NetworkStream(client.Client, true);
                 sk = new Sockets(ip, client, nStream);
-                sk.nStream.BeginRead(sk.RecBuffer, 0, sk.RecBuffer.Length, new AsyncCallback(EndReader), sk);
+                sk.NStream.BeginRead(sk.RecBuffer, 0, sk.RecBuffer.Length, new AsyncCallback(EndReader), sk);
                 sks.ErrorCode = Sockets.ErrorCodes.ConnectSuccess;
-                sks.ex = new Exception("客户端连接成功.");
+                sks.Ex = new Exception("客户端连接成功.");
                 sks.ClientDispose = false;
             }
             catch (Exception skex)
             {
                 sks.ErrorCode = Sockets.ErrorCodes.ConnectError;
-                sks.ex = new Exception("客户端连接失败..异常信息:" + skex.Message);
+                sks.Ex = new Exception("客户端连接失败..异常信息:" + skex.Message);
                 sks.ClientDispose = true;
 
             }
@@ -171,19 +171,19 @@ namespace SuperNetwork.XJSocket
 
                     if (IsClose && client == null)
                     {
-                        sk.nStream.Close();
-                        sk.nStream.Dispose();
+                        sk.NStream.Close();
+                        sk.NStream.Dispose();
                         return;
                     }
-                    s.Offset = s.nStream.EndRead(ir);
+                    s.Offset = s.NStream.EndRead(ir);
                     pushSockets.Invoke(s);//推送至UI
-                    sk.nStream.BeginRead(sk.RecBuffer, 0, sk.RecBuffer.Length, new AsyncCallback(EndReader), sk);
+                    sk.NStream.BeginRead(sk.RecBuffer, 0, sk.RecBuffer.Length, new AsyncCallback(EndReader), sk);
                 }
             }
             catch (Exception skex)
             {
                 Sockets sks = s;
-                sks.ex = skex;
+                sks.Ex = skex;
                 sks.ClientDispose = true;
                 pushSockets.Invoke(sks);//推送至UI
 
@@ -210,9 +210,9 @@ namespace SuperNetwork.XJSocket
             }
             else
             {
-                sks.ex = new Exception("客户端没有初始化.!");
+                sks.Ex = new Exception("客户端没有初始化.!");
             }
-            sks.ex = new Exception("客户端与上端断开连接..");
+            sks.Ex = new Exception("客户端与上端断开连接..");
             pushSockets.Invoke(sks);//推送至UI
         }
     }

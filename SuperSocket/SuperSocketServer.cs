@@ -7,13 +7,15 @@ using SuperSocket.ProtoBase;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SuperNetwork.SuperSocket
 {
+    /// <summary>
+    /// SuperSocket Server Helper
+    /// </summary>
     public class SuperSocketServer
     {
         #region 过滤器
@@ -42,40 +44,58 @@ namespace SuperNetwork.SuperSocket
         }
         #endregion
 
+        #region event
         public event Func<IAppSession, Task<bool>> SessionConnected;
         public event Func<IAppSession, CloseEventArgs, Task<bool>> SessionClosed;
         public event Func<IAppSession, BytesPackage, Task<bool>> DataHandler;
         public event Func<IAppSession, PackageHandlingException<BytesPackage>, Task<bool>> ErrorHandler;
-        public readonly List<ListenOptions> ServerListens = new List<ListenOptions>();
+        #endregion
+
         IHost host;
         /// <summary>
         /// 会话集合
         /// </summary>
         public readonly ConcurrentDictionary<string, IAppSession> Sessions = new ConcurrentDictionary<string, IAppSession>();
-
-        public bool CreateServer(List<ListenOptions> listens, string name = "EchoService", int bufferSize = 1024 * 10)
+        public readonly ServerOptions Options;
+        public SuperSocketServer(ServerOptions options)
+        {
+            Options = options;
+        }
+        public bool CreateServer()
         {
             try
             {
-                ServerListens.Clear();
-                ServerListens.AddRange(listens);
                 host = SuperSocketHostBuilder.Create<BytesPackage, BytesPipelineFilter>()
-                  .ConfigureSuperSocket(options =>
-                  {
-                      options.Name = name;
-                      options.Listeners = listens;
-                      options.ReceiveBufferSize = bufferSize;
-                  })
-                  .UseClearIdleSession()//自动复用已经闲置或者失去连接的资源
-                  .UseSessionHandler(OnConnectedAsync, OnClosedAsync)
-                  .UsePackageHandler(OnPackageAsync)
-                  .ConfigureErrorHandler(OnConfigureError)
-                  .UseInProcSessionContainer()
-                  .ConfigureLogging((hostCtx, loggingBuilder) =>
-                  {
-                      loggingBuilder.AddConsole();
-                  })
-                  .Build();
+                .ConfigureSuperSocket(options =>
+                {
+                    
+                    options.Name = Options.Name;
+                    options.Listeners = Options.Listeners;
+                    options.ReceiveBufferSize = Options.ReceiveBufferSize;
+                    options.IdleSessionTimeOut = Options.IdleSessionTimeOut;
+                    options.In = Options.In;
+                    options.Out = Options.Out;
+                    options.Logger = Options.Logger;
+                    options.MaxPackageLength = Options.MaxPackageLength;
+                    options.ReadAsDemand = Options.ReadAsDemand;
+                    options.SendBufferSize = Options.SendBufferSize;
+                    options.SendTimeout = Options.SendTimeout;
+                    options.ReceiveTimeout = Options.ReceiveTimeout;
+                    options.Values = Options.Values;
+                    options.DefaultTextEncoding = Options.DefaultTextEncoding;
+                    options.ClearIdleSessionInterval = Options.ClearIdleSessionInterval;
+
+                })
+                .UseClearIdleSession()//自动复用已经闲置或者失去连接的资源
+                .UseSessionHandler(OnConnectedAsync, OnClosedAsync)
+                .UsePackageHandler(OnPackageAsync)
+                .ConfigureErrorHandler(OnConfigureError)
+                .UseInProcSessionContainer()
+                .ConfigureLogging((hostCtx, loggingBuilder) =>
+                {
+                    loggingBuilder.AddConsole();
+                })
+                .Build();
 
                 return true;
             }
@@ -97,10 +117,11 @@ namespace SuperNetwork.SuperSocket
 
             //await Task.Factory.StartNew(() =>
             //{
-                //发送收到的数据
-                Debug.WriteLine($"{DateTime.Now} {session.RemoteEndPoint} {Convert.ToHexString(package.Datas)}");
+            //发送收到的数据
+            Debug.WriteLine($"{DateTime.Now} {session.RemoteEndPoint} {Convert.ToHexString(package.Datas)}");
 
-                DataHandler?.Invoke(session, package);
+            DataHandler?.Invoke(session, package);
+            await ValueTask.FromResult(true);
             //});
         }
         /// <summary>
@@ -121,7 +142,7 @@ namespace SuperNetwork.SuperSocket
             //            await Task.Delay(1);
             //    }
             //});
-            Sessions.AddOrUpdate(session.SessionID, session, (e, o) => { return o; });
+            Sessions.AddOrUpdate(session.SessionID, session, (e, o) => { return session; });
             SessionConnected?.Invoke(session);
             await ValueTask.FromResult(true);
 
@@ -151,11 +172,7 @@ namespace SuperNetwork.SuperSocket
         /// <summary>
         /// 启动服务
         /// </summary>
-        public async void StartAsync()
-        {
-            await host?.StartAsync();
-
-        }
+        public async void StartAsync() => await host?.StartAsync();
 
         /// <summary>
         /// 停止服务
@@ -176,11 +193,15 @@ namespace SuperNetwork.SuperSocket
 
         public async ValueTask SendAsync(string endPoint, byte[] data)
         {
-            IAppSession appSession = Sessions.Values.FirstOrDefault(o => o.RemoteEndPoint.ToString() == endPoint && o.State is SessionState.Connected);
-            if (appSession != null)
-                await appSession.SendAsync(data);
-            else
-                await Task.FromResult(false);
+            try
+            {
+                IAppSession appSession = Sessions.Values.FirstOrDefault(o => o.RemoteEndPoint.ToString() == endPoint && o.State is SessionState.Connected);
+                if (appSession != null)
+                    await appSession.SendAsync(data);
+                else
+                    await Task.FromResult(false);
+            }
+            catch (Exception ex) { }
         }
         public void Send(string endPoint, byte[] data)
         {

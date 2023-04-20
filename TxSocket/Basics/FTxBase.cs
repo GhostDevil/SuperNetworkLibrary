@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using SuperNetwork.TxSocket.PasswordManage;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.TxSocket.InternalTool;
 using SuperNetwork.TxSocket.FileCenter;
 namespace SuperNetwork.TxSocket.Basics
 {

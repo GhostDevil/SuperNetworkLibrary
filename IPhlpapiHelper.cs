@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace SuperNetwork
 {
     /// <summary>
     /// iphlpapi 助手api
     /// </summary>
-    public static class IPhlpapiHelper
+    [SupportedOSPlatform("windows")]
+    public static class IphlpapiHelper
     {
         #region Public Fields
 
@@ -15,11 +17,11 @@ namespace SuperNetwork
         /// <summary>
         /// ipv4 地址族
         /// </summary>
-        public const int AfInet = 2;
+        public const int ipVersion4 = 2;
         /// <summary>
         /// ipv6 地址族
         /// </summary>
-        public const int AfInet6 = 10;
+        public const int ipVersion6 = 10;
 
         #endregion Public Fields
 
@@ -27,7 +29,7 @@ namespace SuperNetwork
 
 
         /// <summary>
-        /// <see cref="http://msdn2.microsoft.com/en-us/library/aa365928.aspx"/>
+        /// <see cref="http://msdn.microsoft.com/en-us/library/aa365928.aspx"/>
         /// </summary>
         /// <param name="tcpTable">指向表结构的指针，其中包含应用程序可用的筛选 TCP 终结点。</param>
         /// <param name="tcpTableLength">以 tcpTable 表示的结构的估计大小（以字节为单位）。</param>

@@ -3,8 +3,8 @@ using System.Net.Sockets;
 using System.Threading;
 using SuperNetwork.TxSocket.PasswordManage;
 using SuperNetwork.TxSocket.Basics;
-using SuperNetwork.PublicClass;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.InternalClass;
+using SuperNetwork.TxSocket.InternalTool;
 namespace SuperNetwork.TxSocket
 {
     /// <summary>

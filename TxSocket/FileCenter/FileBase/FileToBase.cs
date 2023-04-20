@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.TxSocket.InternalTool;
 namespace SuperNetwork.TxSocket.FileCenter.FileBase
 {
     /// <summary>

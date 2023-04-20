@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SuperNetwork.TxSocket.PublicTool
+namespace SuperNetwork.TxSocket.InternalTool
 {
     /// <summary>
     /// 数据计算的一些方法

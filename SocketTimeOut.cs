@@ -11,7 +11,7 @@ namespace SuperNetwork
         private static Exception socketexception;
         private static readonly ManualResetEvent TimeoutObject = new ManualResetEvent(false);
 
-        public static bool Connect(IPEndPoint remoteEndPoint, int timeoutMSec)
+        public static bool TestConnect(IPEndPoint remoteEndPoint, int timeoutMSec)
         {
             TimeoutObject.Reset();
             socketexception = null;
@@ -19,7 +19,7 @@ namespace SuperNetwork
             string serverip = Convert.ToString(remoteEndPoint.Address);
             int serverport = remoteEndPoint.Port;
             TcpClient tcpclient = new TcpClient();
-
+           
             tcpclient.BeginConnect(serverip, serverport,
                 new AsyncCallback(CallBackMethod), tcpclient);
 

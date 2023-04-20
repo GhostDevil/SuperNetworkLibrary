@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using SuperNetwork.TxSocket.Basics;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.TxSocket.InternalTool;
 namespace SuperNetwork.TxSocket.PasswordManage
 {
     /// <summary>

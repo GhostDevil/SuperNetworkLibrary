@@ -2,7 +2,7 @@
 using SuperNetwork.TxSocket.Basics;
 using System.Net.Sockets;
 
-namespace SuperNetwork.PublicClass
+namespace SuperNetwork.InternalClass
 {
     /// <summary>
     /// TCP协议的state

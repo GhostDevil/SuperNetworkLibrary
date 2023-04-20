@@ -8,7 +8,6 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SuperNetwork
 {
@@ -33,28 +32,26 @@ namespace SuperNetwork
         {
             // 声明 IPHostEntry 
             bool b = false;
-            IPHostEntry ServerHE = null, fromHE;
-            int nBytes = 0;
-            int dwStart = 0;
+            IPHostEntry fromHE;
+            int nBytes;
             spend = 0;
 
             //初始化ICMP的Socket 
-            Socket socket =
-             new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.Icmp);
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.Icmp);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, 1000);
             // 得到Server EndPoint 
             try
             {
-                ServerHE = Dns.GetHostEntry(host);//Dns.GetHostByName(host);
+                IPHostEntry ServerHE = Dns.GetHostEntry(host);
 
                 // 把 Server IP_EndPoint转换成EndPoint 
                 IPEndPoint ipepServer = new IPEndPoint(ServerHE.AddressList[0], 0);
-                EndPoint epServer = (ipepServer);
+                EndPoint epServer = ipepServer;
 
                 // 设定客户机的接收Endpoint 
                 fromHE = Dns.GetHostEntry(Dns.GetHostName());//Dns.GetHostByName(Dns.GetHostName())
                 IPEndPoint ipEndPointFrom = new IPEndPoint(fromHE.AddressList[0], 0);
-                EndPoint EndPointFrom = (ipEndPointFrom);
+                EndPoint EndPointFrom = ipEndPointFrom;
 
                 int PacketSize = 0;
                 IcmpPacket packet = new IcmpPacket
@@ -129,8 +126,8 @@ namespace SuperNetwork
 
                 }
 
-                dwStart = Environment.TickCount; // Start timing 
-                                                        //send the Packet over the socket 
+                int dwStart = Environment.TickCount;
+                //send the Packet over the socket 
                 if ((nBytes = socket.SendTo(sendbuf, PacketSize, 0, epServer)) == SOCKET_ERROR)
                 {
                     error = "Socket Error: cannot send Packet";
@@ -187,10 +184,10 @@ namespace SuperNetwork
             int Index = 0;
 
             byte[] b_type = new byte[1];
-            b_type[0] = (packet.Type);
+            b_type[0] = packet.Type;
 
             byte[] b_code = new byte[1];
-            b_code[0] = (packet.SubCode);
+            b_code[0] = packet.SubCode;
 
             byte[] b_cksum = BitConverter.GetBytes(packet.CheckSum);
             byte[] b_id = BitConverter.GetBytes(packet.Identifier);
@@ -240,8 +237,8 @@ namespace SuperNetwork
             }
 
             cksum = (cksum >> 16) + (cksum & 0xffff);
-            cksum += (cksum >> 16);
-            return (ushort)(~cksum);
+            cksum += cksum >> 16;
+            return (ushort)~cksum;
         }
         /// <summary> 
         /// 信息包
@@ -298,17 +295,8 @@ namespace SuperNetwork
                            
                             //IPAddress ipAddress = IPAddress.Parse(ips);
                             IPEndPoint ipEndPoint = new IPEndPoint(ipAddress, port); //ip地址，端口号        
-                            bool sock = SuperNetwork.SocketTimeOut.Connect(ipEndPoint, timeout);
+                            bool sock = SuperNetwork.SocketTimeOut.TestConnect(ipEndPoint, timeout);
                             return sock;
-                            //Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-                            ////socketAsyncEventArgs = new SocketAsyncEventArgs();
-                            ////socketAsyncEventArgs.Completed += (e,w) => {if(w.SocketFlags== SocketFlags. };
-                            ////sock.ConnectAsync(socketAsyncEventArgs);
-                            ////SyncTimeOut(sock, timeout);
-                            //sock.Connect(ipAddress, port);
-                            //sock.Close();
-                            //return false;
                         }
                         catch
                         {
@@ -323,7 +311,7 @@ namespace SuperNetwork
             catch { return false; }
         }
         ///<summary>
-        /// 传入域名返回对应的IP
+        /// 获取域名对应的IP
         ///</summary>
         ///<param name="domain">域名</param>
         ///<returns></returns>
@@ -370,26 +358,6 @@ namespace SuperNetwork
             //  isconn = true;
             return isconn;
         }
-        /// <summary>
-        /// 循环2次后关闭socket
-        /// </summary>
-        /// <param name="client">
-        static async void SyncTimeOut(Socket client,int timeout)
-        {
-            int i = 2, k = 0;
-            
-                while (true)
-                {
-                   await Task.Delay(timeout);
-                    k++;
-                    if (k >= i)
-                    {
-                        try { client.Close(); }
-                        catch { }
-                    }
-                }
-           
-        }
         #endregion
 
         #region  根据IP地址获得主机名称 
@@ -429,7 +397,7 @@ namespace SuperNetwork
         /// <param name="startIp">开始ip</param>
         /// <param name="endIp">结束ip</param>
         /// <returns>返回局域网内在线的计算机名称和Ip集合</returns>
-        public static Dictionary<string, string> ScanLanComputers(string ipPrefix, int startIp = 0, int endIp = 255)
+        public static Dictionary<string, string> ScanLanComputers(string ipPrefix, int startIp = 0, int endIp = 254)
         {
             Dictionary<string, string> computerList = new Dictionary<string, string>();
             ArrayList a = new ArrayList();
@@ -437,8 +405,8 @@ namespace SuperNetwork
             {
                 string scanIP = ipPrefix + "." + i.ToString();
                 IPAddress myScanIP = IPAddress.Parse(scanIP);
-                IPHostEntry myScanHost = null;
                 string[] arr = new string[2];
+                IPHostEntry myScanHost;
                 try
                 {
                     //myScanHost = Dns.GetHostByAddress(myScanIP);
@@ -524,7 +492,7 @@ namespace SuperNetwork
         /// <returns>已连接返回true，否则未连接</returns>
         public static bool IsConnectedToInternet()
         {
-            int Desc = 0;
+            int Desc;
             return InternetGetConnectedState(out Desc, 0);
         }
       
@@ -537,7 +505,7 @@ namespace SuperNetwork
         /// <returns></returns>
         public static bool LocalConnectionStatus()
         {
-            int dwFlag = new int();
+            int dwFlag;
             if (!InternetGetConnectedState(out dwFlag, 0))
             {
                 Console.WriteLine("LocalConnectionStatus--未连网!");
@@ -564,8 +532,7 @@ namespace SuperNetwork
         /// <param name="urls"></param>
         public static void CheckServeStatus(string[] urls)
         {
-            int errCount = 0;//ping时连接失败个数
-
+            int errCount;
             if (!LocalConnectionStatus())
             {
                 Console.WriteLine("网络异常~无连接");

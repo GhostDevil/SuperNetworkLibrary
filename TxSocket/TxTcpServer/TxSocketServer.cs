@@ -5,21 +5,22 @@ using System.Net.Sockets;
 using System.Threading;
 using SuperNetwork.TxSocket.Basics;
 using SuperNetwork.TxSocket.PasswordManage;
-using SuperNetwork.PublicClass;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.InternalClass;
+using SuperNetwork.TxSocket.InternalTool;
 using SuperNetwork.TxSocket.FileCenter;
+using System.Threading.Tasks;
+
 namespace SuperNetwork.TxSocket
 {
     /// <summary>
     /// 面向服务器的主线程类
     /// </summary>
-    public class TxSocketServer : TcpFTxBase,ITxServer
+    public class TxSocketServer : TcpFTxBase, ITxServer
     {
         #region 基本属性区块
         private List<TxTcpState> state = null;//所有客户端
         private Socket listener = null;
-        private Thread HeartThread = null;
-        private int _clientMax =20;//允许最多客户端数
+        private int _clientMax = 20;//允许最多客户端数
         /// <summary>
         /// 当有客户连接成功的时候,触发此事件
         /// </summary>
@@ -29,15 +30,15 @@ namespace SuperNetwork.TxSocket
         /// </summary>
         public event TxDelegate<IPEndPoint, string> Disconnection;
         /// <summary>
-       /// 当前客户端数量
-       /// </summary>
-       public int ClientNumber
+        /// 当前客户端数量
+        /// </summary>
+        public int ClientNumber
         {
             get { return state.Count; }
         }
-       /// <summary>
+        /// <summary>
         /// 允许最多客户端数
-       /// </summary>
+        /// </summary>
         public int ClientMax
         {
             get { return _clientMax; }
@@ -49,29 +50,31 @@ namespace SuperNetwork.TxSocket
                     _clientMax = value;
             }
         }
-       /// <summary>
-       /// 得到所有的客户端
-       /// </summary>
+        /// <summary>
+        /// 得到所有的客户端
+        /// </summary>
         List<IPEndPoint> ITxServer.ClientAll
         {
-           get {
-               if (state == null || state.Count == 0)
-                   return null;
-               List<IPEndPoint> IpEndPoint = new List<IPEndPoint>();
-               foreach (TxTcpState stateOne in state)
-               {
-                   IpEndPoint.Add(stateOne.IpEndPoint);
-               }
-               return IpEndPoint;
-           }
+            get
+            {
+                if (state == null || state.Count == 0)
+                    return null;
+                List<IPEndPoint> IpEndPoint = new List<IPEndPoint>();
+                foreach (TxTcpState stateOne in state)
+                {
+                    IpEndPoint.Add(stateOne.IpEndPoint);
+                }
+                return IpEndPoint;
+            }
         }
         /// <summary>
         /// 带参数的构造函数
         /// </summary>
         /// <param name="port">端口号</param>
         internal TxSocketServer(int port)
-        {Port = port;
-        state ??= new List<TxTcpState>();
+        {
+            Port = port;
+            state ??= new List<TxTcpState>();
         }
         #endregion
         #region 启动以及接收客户端区块
@@ -83,26 +86,24 @@ namespace SuperNetwork.TxSocket
             if (EngineStart)
                 return;
             try
-            {           
+            {
                 listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 listener.Bind(IpEndPoint);
                 listener.Listen(200);
-                listener.BeginAccept(new AsyncCallback(AcceptCallback), listener);
-                HeartThread = new Thread(heartThread)
-                {
-                    IsBackground = true
-                };
-                HeartThread.Start();//把心跳方法加入到线程里面
+                listener.BeginAccept(new AsyncCallback(AcceptCallback), listener);                
                 _engineStart = true;//启动成功
+                Task.Run(HeartThread);
+
                 FileOperate("服务器启动成功,交流QQ群：426414437");//记录
             }
-            catch(Exception Ex) {
+            catch (Exception Ex)
+            {
                 FileOperate("服务器启动失败");//记录
                 if (HeartThread != null)
                     CloseEngine();
                 throw new Exception(Ex.Message);
             }
-        } 
+        }
         /// <summary>
         /// 当连接一个客户端之后的回调函数
         /// </summary>
@@ -121,10 +122,10 @@ namespace SuperNetwork.TxSocket
             }
             try
             {
-            Socket Listener = (Socket)ar.AsyncState;
-            Socket handler = listener.EndAccept(ar);
-            stateOne = new TxTcpState(handler,BufferSize);
-                Thread threadLongin = new Thread(loginInitialization)
+                Socket Listener = (Socket)ar.AsyncState;
+                Socket handler = listener.EndAccept(ar);
+                stateOne = new TxTcpState(handler, BufferSize);
+                Thread threadLongin = new Thread(LoginInitialization)
                 {
                     IsBackground = true
                 };
@@ -159,7 +160,7 @@ namespace SuperNetwork.TxSocket
             {
                 int i = Ex.Message.IndexOf("远程主机强迫关闭了一个现有的连接");
                 if (stateOne != null && i != -1)
-                { socketRemove(stateOne, Ex.Message); }
+                { SocketRemove(stateOne, Ex.Message); }
             }
         }
         /// <summary>
@@ -169,19 +170,19 @@ namespace SuperNetwork.TxSocket
         /// <param name="haveDate">代码</param>
         override internal void VerificationCodeManage(TxTcpState stateOne, byte haveDate)
         {
-            if (stateOne== null)
+            if (stateOne == null)
                 return;
             switch (haveDate)
-           {
-               case 0://不是需要的数据
-                   break;
-               case PasswordCode._heartbeatCode://是心跳信息
-                   //stateOne.HeartTime = DateTime.Now;
-                   break;
-               case PasswordCode._clientToServer://客户端和服务端暗号正确；可以登录;
-                   loginSuccess(stateOne);
-                   break;
-           }
+            {
+                case 0://不是需要的数据
+                    break;
+                case PasswordCode._heartbeatCode://是心跳信息
+                                                 //stateOne.HeartTime = DateTime.Now;
+                    break;
+                case PasswordCode._clientToServer://客户端和服务端暗号正确；可以登录;
+                    loginSuccess(stateOne);
+                    break;
+            }
         }
         #endregion
         #region 向客户端发送数据的区块
@@ -206,7 +207,7 @@ namespace SuperNetwork.TxSocket
                 if (i != -1)
                 {
                     TxTcpState stateOne = IPEndPointToState(stateBase.IpEndPoint);
-                    socketRemove(stateOne, Ex.Message); 
+                    SocketRemove(stateOne, Ex.Message);
                 }
             }
         }
@@ -221,7 +222,7 @@ namespace SuperNetwork.TxSocket
                 return;
             Socket handler = stateBase.WorkSocket;
             try
-            {   
+            {
                 int bytesSent = handler.EndSend(ar);
             }
             catch
@@ -233,13 +234,13 @@ namespace SuperNetwork.TxSocket
         /// <summary>
         /// 心跳线程
         /// </summary>
-        private void heartThread()
+        private async void HeartThread()
         {
             while (true)
             {
-                Thread.Sleep(HeartTime * 1000);
-                int i=0;
-                while(i<state.Count)
+                await Task.Delay(HeartTime * 1000);
+                int i = 0;
+                while (i < state?.Count)
                 {
                     if (state[i] == null)
                     {
@@ -248,15 +249,16 @@ namespace SuperNetwork.TxSocket
                     }
                     else if ((int)(DateTime.Now - state[i].HeartTime).TotalSeconds > HeartTime * 4)//4次没有收到失去联系
                     {
-                        socketRemove(state[i],"客户端长期连接不上,将断开此客户端");
+                        SocketRemove(state[i], "客户端长期连接不上,将断开此客户端");
                         continue;
-                    }else 
+                    }
+                    else
                     {
                         Send(state[i], EncryptionDecryptVerification.EncryptionVerification(PasswordCode._heartbeatCode));
                     }
                     i++;
                 }
-                if (_engineStart == false || state.Count>100)//后面的大于100用于限制商业版的
+                if (_engineStart == false || state.Count > 100)//后面的大于100用于限制商业版的
                     break;
             }
         }
@@ -265,32 +267,32 @@ namespace SuperNetwork.TxSocket
         /// </summary>
         /// <param name="stateOne">TcpState</param>
         /// <param name="str">原因</param>
-        private void socketRemove(TxTcpState stateOne,string str)
+        private void SocketRemove(TxTcpState stateOne, string str)
         {
             if (stateOne == null)
-                return;  
-                stateOne.WorkSocket.Close();
-                if (state.Remove(stateOne))//当没有登录的时候断掉，不触发下面的事件
-                {
-                    CommonMethod.EventInvoket(() => { Disconnection(stateOne.IpEndPoint, str); }); //当客户端断掉的时候触发此事件
-                    FileOperate(stateOne.IpEndPoint.ToString() + "已经断开");//记录
-                    FileStart.FileStopITxBase(stateOne);
-                }
-                stateOne = null;
+                return;
+            stateOne.WorkSocket.Close();
+            if (state.Remove(stateOne))//当没有登录的时候断掉，不触发下面的事件
+            {
+                CommonMethod.EventInvoket(() => { Disconnection(stateOne.IpEndPoint, str); }); //当客户端断掉的时候触发此事件
+                FileOperate(stateOne.IpEndPoint.ToString() + "已经断开");//记录
+                FileStart.FileStopITxBase(stateOne);
+            }
+            stateOne = null;
         }
         /// <summary>
         /// 当客户端连接之后要处理的一个线程,会验证客户端的身份。成功才允许登陆；
         /// </summary>
         /// <param name="stateOne1">TcpState</param>
-        private void loginInitialization(object stateOne1)
+        private void LoginInitialization(object stateOne1)
         {
             TxTcpState stateOne = (TxTcpState)stateOne1;
             if (ClientNumber >= _clientMax)
-                {
-                    FileOperate("客户端数量已达到上限,交流QQ群：426414437");//记录
-                    socketRemove(stateOne, "客户端数量已达到上限");
-                    return;
-                }
+            {
+                FileOperate("客户端数量已达到上限,交流QQ群：426414437");//记录
+                SocketRemove(stateOne, "客户端数量已达到上限");
+                return;
+            }
             Send(stateOne, EncryptionDecryptVerification.EncryptionVerification(PasswordCode._serverToClient));//发送登录成功的代码
             try
             {
@@ -306,8 +308,10 @@ namespace SuperNetwork.TxSocket
                 if (stateOne == null || stateOne.ConnectOk == true)
                     break;
                 if ((int)(DateTime.Now - dateOne).TotalSeconds > 2)
-                { clientClose(stateOne);FileOperate(stateOne.IpEndPoint.ToString()+"无法收到客户端登录信息");//记录;
-                    break; }
+                {
+                    clientClose(stateOne); FileOperate(stateOne.IpEndPoint.ToString() + "无法收到客户端登录信息");//记录;
+                    break;
+                }
             }
         }
         /// <summary>
@@ -316,10 +320,10 @@ namespace SuperNetwork.TxSocket
         /// <param name="stateOne">TcpState</param>
         private void loginSuccess(TxTcpState stateOne)
         {
-                stateOne.ConnectOk = true;
-                state.Add(stateOne);
-                CommonMethod.EventInvoket(() => { Connect(stateOne.IpEndPoint); });
-                FileOperate(stateOne.IpEndPoint.ToString() + "登陆成功");//记录
+            stateOne.ConnectOk = true;
+            state.Add(stateOne);
+            CommonMethod.EventInvoket(() => { Connect(stateOne.IpEndPoint); });
+            FileOperate(stateOne.IpEndPoint.ToString() + "登陆成功");//记录
         }
         #endregion
         #region 客户需要操作的一些方法
@@ -329,9 +333,8 @@ namespace SuperNetwork.TxSocket
         override public void CloseEngine()
         {
             try
-            { 
-                HeartThread?.Abort();
-                HeartThread = null;
+            {
+               
                 clientAllClose();
                 state = null;
                 listener?.Close();
@@ -348,7 +351,7 @@ namespace SuperNetwork.TxSocket
         {
             foreach (TxTcpState stateo in state)
             {
-                socketRemove(stateo, "服务器关闭所有的客户端");
+                SocketRemove(stateo, "服务器关闭所有的客户端");
             }
         }
         /// <summary>
@@ -357,7 +360,7 @@ namespace SuperNetwork.TxSocket
         /// <param name="stateOne">TcpState</param>
         private void clientClose(TxTcpState stateOne)
         {
-            if (stateOne == null || ClientNumber==0)
+            if (stateOne == null || ClientNumber == 0)
                 return;
             state.Remove(stateOne);//先把这个移除,万一对方没有收到下面的信息;对方一定时候也会自动关闭这个连接
             Send(stateOne, EncryptionDecryptVerification.EncryptionVerification(PasswordCode._clientCloseCode));//发送一个强制关闭的代码过去
@@ -367,9 +370,10 @@ namespace SuperNetwork.TxSocket
         /// </summary>
         /// <param name="ipEndPoint">IPEndPoint</param>
         public void clientClose(IPEndPoint ipEndPoint)
-        { TxTcpState stateOne = IPEndPointToState(ipEndPoint);
-        clientClose(stateOne);
-            }
+        {
+            TxTcpState stateOne = IPEndPointToState(ipEndPoint);
+            clientClose(stateOne);
+        }
         /// <summary>
         /// 检查某个客户端是否在线
         /// </summary>
@@ -378,8 +382,8 @@ namespace SuperNetwork.TxSocket
         public bool clientCheck(IPEndPoint ipEndPoint)
         {
             TxTcpState stateOne = IPEndPointToState(ipEndPoint);
-            if (stateOne==null)
-            return false;
+            if (stateOne == null)
+                return false;
             return true;
         }
         /// <summary>
@@ -451,11 +455,11 @@ namespace SuperNetwork.TxSocket
         {
             try
             {
-                return state.Find(delegate(TxTcpState state1) { return state1.IpEndPoint == ipEndPoint; });
+                return state.Find(delegate (TxTcpState state1) { return state1.IpEndPoint == ipEndPoint; });
             }
             catch { return null; }
         }
-       
+
         #endregion
     }
 }

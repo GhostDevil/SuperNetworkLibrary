@@ -2,12 +2,14 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 
 namespace SuperNetwork
 {
     /// <summary>
     /// ADSL重新连接、拨号
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class AdslHelper
     {
         // Fields
@@ -38,11 +40,7 @@ namespace SuperNetwork
         private const int RASCS_PAUSED = 0x1000;
         private const int UNLEN = 0x100;
 
-        // Methods
-        public AdslHelper()
-        {
-        }
-
+     
         /// <summary>
         /// 
         /// </summary>

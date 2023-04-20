@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace SuperNetwork.SuperSocket
 {
@@ -122,7 +123,7 @@ namespace SuperNetwork.SuperSocket
             try
             {
                 listener.Start();
-                new Thread(new ThreadStart(delegate
+                Task.Run(async ()=>
                 {
                     while (true)
                     {
@@ -131,9 +132,9 @@ namespace SuperNetwork.SuperSocket
                             break;
                         }
                         GetAcceptTcpClient();
-                        Thread.Sleep(1);
+                        await Task.Delay(1);
                     }
-                })).Start();
+                });
             }
             catch (SocketException skex)
             {
@@ -170,7 +171,7 @@ namespace SuperNetwork.SuperSocket
                 //主动向客户端发送一条连接成功信息 , 握手.
                 while (!t.IsCompleted) //先确保接收完毕.这样才能准确验证kay了
                 {
-                    Thread.Sleep(1);
+                    Task.Delay(1).GetAwaiter().GetResult();
                 }
                 byte[] buffer = PackHandShakeData(GetSecKeyAccetp(sks.RecBuffer, sks.RecBuffer.Length));
                 stream.Write(buffer, 0, buffer.Length);

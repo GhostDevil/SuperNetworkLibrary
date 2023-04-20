@@ -316,7 +316,7 @@ namespace SuperNetwork.SuperTcp
             Socket socket = ResoultSocket(ip, port);
             try
             {
-                socket?.Send((Encoding.UTF8.GetBytes(strData)));
+                socket?.Send(Encoding.UTF8.GetBytes(strData));
             }
             catch (SocketException ex)
             {

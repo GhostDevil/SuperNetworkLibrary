@@ -13,7 +13,7 @@
         public static ITxServer StartServer(int port)
         {
             ITxServer server = new TxSocketServer(port);
-            return (server);
+            return server;
         }
         /// <summary>
         /// 注册客户端,返回一个ITxServer类,再从ITxClient中的startClient一个方法启动客户端;
@@ -24,7 +24,7 @@
         public static ITxClient StartClient(string ip, int port)
         {
             ITxClient client = new TxSocketClient(ip, port);
-            return (client);
+            return client;
         }
         /// <summary>
         /// 注册Udp服务端；端口在Port属性设置，默认为随机；具体到StartEngine启动
@@ -33,7 +33,7 @@
         public static IUdpTx StartUdp()
         {
             IUdpTx udp = new UdpTx();
-            return (udp);
+            return udp;
         }
     }
 }

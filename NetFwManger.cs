@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Runtime.Versioning;
 using NetFwTypeLib;//COM+ 组件 NetFwTypeLib
 
 namespace SuperNetwork
@@ -9,7 +10,7 @@ namespace SuperNetwork
     /// 作者:不良帥
     /// 描述:windows防火墙操作
     /// </summary>
-    //[SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("windows")]
     public static class NetFwManger
     {
         /// <summary>

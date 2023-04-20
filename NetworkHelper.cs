@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Management;
 using System.Net;
+using System.Net.Mail;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -11,7 +12,6 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
-//using System.Web;
 
 namespace SuperNetwork
 {
@@ -23,6 +23,100 @@ namespace SuperNetwork
     /// </summary>
     public class NetworkHelper
     {
+
+
+
+        /// <summary>
+                /// 获取本机的局域网IP
+                /// </summary>        
+        public static string LANIP
+        {
+            get
+            {
+                //获取本机的IP列表,IP列表中的第一项是局域网IP，第二项是广域网IP
+                IPAddress[] addressList = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
+
+                //如果本机IP列表为空，则返回空字符串
+                if (addressList.Length < 1)
+                {
+                    return "";
+                }
+
+                //返回本机的局域网IP
+                return addressList[0].ToString();
+            }
+        }
+
+        /// <summary>
+                /// 获取本机在Internet网络的广域网IP
+                /// </summary>        
+        public static string WANIP
+        {
+            get
+            {
+                //获取本机的IP列表,IP列表中的第一项是局域网IP，第二项是广域网IP
+                IPAddress[] addressList = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
+
+                //如果本机IP列表小于2，则返回空字符串
+                if (addressList.Length < 2)
+                {
+                    return "";
+                }
+
+                //返回本机的广域网IP
+                return addressList[1].ToString();
+            }
+        }
+
+        /// <summary>
+                /// 获取远程客户机的IP地址
+                /// </summary>
+                /// <param name="clientSocket">客户端的socket对象</param>        
+        public static string GetClientIP(Socket clientSocket)
+        {
+            IPEndPoint client = (IPEndPoint)clientSocket.RemoteEndPoint;
+            return client.Address.ToString();
+        }
+
+        /// <summary>
+                /// 发送电子邮件,所有SMTP配置信息均在config配置文件中system.net节设置.
+                /// </summary>
+                /// <param name="receiveEmail">接收电子邮件的地址</param>
+                /// <param name="msgSubject">电子邮件的标题</param>
+                /// <param name="msgBody">电子邮件的正文</param>
+                /// <param name="IsEnableSSL">是否开启SSL</param>
+        public static bool SendEmail(string receiveEmail, string msgSubject, string msgBody, bool IsEnableSSL)
+        {
+            //创建电子邮件对象
+            MailMessage email = new MailMessage();
+            //设置接收人的电子邮件地址
+            email.To.Add(receiveEmail);
+            //设置邮件的标题
+            email.Subject = msgSubject;
+            //设置邮件的正文
+            email.Body = msgBody;
+            //设置邮件为HTML格式
+            email.IsBodyHtml = true;
+
+            //创建SMTP客户端，将自动从配置文件中获取SMTP服务器信息
+            SmtpClient smtp = new SmtpClient
+            {
+                //开启SSL
+                EnableSsl = IsEnableSSL
+            };
+
+            try
+            {
+                //发送电子邮件
+                smtp.Send(email);
+
+                return true;
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         /// <summary>
         /// 检查设置的端口号是否正确，并返回正确的端口号,无效端口号返回-1。
@@ -56,30 +150,6 @@ namespace SuperNetwork
         }
 
 
-        /// <summary>
-        /// 将字符串形式的IP地址转换成IPAddress对象
-        /// </summary>
-        /// <param name="ip">字符串形式的IP地址</param>        
-        public static IPAddress StringToIPAddress(string ip)
-        {
-            return IPAddress.Parse(ip);
-        }
-
-
-
-        /// <summary>
-        /// 获取本机的计算机名
-        /// </summary>
-        public static string LocalHostName
-        {
-            get
-            {
-                return Dns.GetHostName();
-            }
-        }
-
-
-
         [DllImport("wininet.dll")]
         private extern static bool InternetGetConnectedState(int Description, int ReservedValue);
 
@@ -87,6 +157,7 @@ namespace SuperNetwork
         /// 机器是否联网
         /// </summary>
         /// <returns></returns>
+        [SupportedOSPlatform("windows")]
         public static bool IsConnectedToInternet()
         {
             int Desc = 0;
@@ -114,13 +185,13 @@ namespace SuperNetwork
 
         static extern int inet_addr(string ipaddr);
         ///<summary>
-        /// SendArp获取MAC地址
+        /// 获取MAC地址
         ///</summary>
         ///<param name="RemoteIP">目标机器的IP地址如(192.168.1.1)</param>
         ///<returns>目标机器的mac 地址</returns>
+        [SupportedOSPlatform("windows")]
         public static string GetMacAddress(string RemoteIP)
         {
-
             StringBuilder macAddress = new StringBuilder();
             try
             {
@@ -150,57 +221,14 @@ namespace SuperNetwork
                 return macAddress.ToString();
             }
         }
-        ///// <summary>
-        // /// 获取mac不带-
-        // /// </summary>
-        // /// <param name="loip"></param>
-        // /// <returns></returns>
-        //public static string GetMacAddress(string loip, string splitStr = null)
-        //{
-        //    try
-        //    {
-        //        //获取网卡硬件地址 
-        //        string mac = "";
-        //        ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
-        //        ManagementObjectCollection moc = mc.GetInstances();
-        //        foreach (ManagementObject mo in moc)
-        //        {
-        //            if ((bool)mo["IPEnabled"] == true)
-        //            {
-        //                Array ar;
-        //                ar = (Array)(mo.Properties["IpAddress"].Value);
-        //                foreach (string ip in ar)
-        //                {
-        //                    if (ip == loip)
-        //                    {
-        //                        mac = mo["MacAddress"].ToString();
-        //                        if (string.IsNullOrEmpty(mac))
-        //                            continue;
-        //                        if (splitStr != null)
-        //                        {
-        //                            mac = mac.Replace(":", splitStr);
-        //                        }
-        //                        moc = null;
-        //                        mc = null;
-        //                        return mac;
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch
-        //    {
-
-        //    }
-        //    return "unknow";
-        //}
 
         /// <summary>
         /// 获取本机MAC地址
         /// </summary>
         /// <param name="splitStr">分隔符</param>
         /// <returns>返回MAC地址</returns>        
-        public static string GetRealMacAddress(string splitStr)
+        [SupportedOSPlatform("windows")]
+        public static string GetLocalMac(string splitStr = ":")
         {
             ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
             ManagementObjectCollection moc = mc.GetInstances();
@@ -221,10 +249,11 @@ namespace SuperNetwork
             return macAddrStr;
         }
         /// <summary>
-        /// 获取MAC地址
+        /// 获取远端MAC地址
         /// </summary>
         /// <param name="clientIP">指定IP地址</param>
         /// <returns>MAC地址</returns>
+        [SupportedOSPlatform("windows")]
         public static string GetRemoteMac(string clientIP)
         {
             string ip = clientIP;
@@ -268,7 +297,7 @@ namespace SuperNetwork
 
 
         /// <summary>
-        /// 获取IP信息
+        /// 获取本地ip
         /// </summary>
         /// <param name="strIpPrefix"></param>
         /// <returns></returns>
@@ -324,7 +353,8 @@ namespace SuperNetwork
         /// <summary>
         /// 获得本机局域网ip
         /// </summary>
-        /// <returns></returns>       
+        /// <returns></returns>        
+        [SupportedOSPlatform("windows")]
         public static string GetPrivateIP()
         {
             ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
@@ -355,83 +385,6 @@ namespace SuperNetwork
             return IpArray;
         }
 
-
-
-        ///// <summary>
-        ///// 获取本机在Internet网络的广域网IP
-        ///// </summary>        
-        //public static string WANIP
-        //{
-        //    get
-        //    {
-        //        //获取本机的IP列表,IP列表中的第一项是局域网IP，第二项是广域网IP
-        //        IPAddress[] addressList = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
-        //        //如果本机IP列表小于2，则返回空字符串
-        //        if (addressList.Length > 3)
-        //            return "";
-        //        //返回本机的广域网IP
-        //        return addressList[2].ToString();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 获取公网IP
-        ///// </summary>
-        ///// <returns>公网IP地址</returns>
-        //public async static Task<string> GetPublicIPAsync()
-        //{
-        //    try
-        //    {
-        //        using (HttpClient wc = new HttpClient())
-        //        {
-        //            string html = await wc.GetStringAsync("http://ip.qq.com");
-        //            System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(html, "<span class=\"red\">([^<]+)</span>");
-        //            if (m.Success) return m.Groups[1].Value;
-
-        //            return "";
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return "";
-        //    }
-        //}
-
-
-        ///// <summary>
-        ///// 获得Web用户IP
-        ///// </summary>
-        //public static string GetWebUserIp()
-        //{
-        //    string ip;
-        //    string[] temp;
-        //    bool isErr = false;
-        //    if (HttpContext.Current.Request.ServerVariables["HTTP_X_ForWARDED_For"] == null)
-        //        ip = System.Web.HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"].ToString();
-        //    else
-        //        ip = System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_ForWARDED_For"].ToString();
-        //    if (ip.Length > 15)
-        //        isErr = true;
-        //    else
-        //    {
-        //        temp = ip.Split('.');
-        //        if (temp.Length == 4)
-        //        {
-        //            for (int i = 0; i < temp.Length; i++)
-        //            {
-        //                if (temp[i].Length > 3) isErr = true;
-        //            }
-        //        }
-        //        else
-        //            isErr = true;
-        //    }
-
-        //    if (isErr)
-        //        return "1.1.1.1";
-        //    else
-        //        return ip;
-        //}
-
         /// <summary>
         /// 根据主机名（域名）获得主机的IP地址
         /// </summary>
@@ -461,7 +414,8 @@ namespace SuperNetwork
         /// <param name="NameOrIP">NameOrIP：局域网计算机名字或者ip地址</param>
         /// <param name="selfaAdminName">自己的管理员账号</param>
         /// <param name="adminPwd">自己的管理员密码</param>
-        /// <returns></returns>
+        /// <returns></returns>      
+        [SupportedOSPlatform("windows")]
         public static bool Execute(string command, string NameOrIP, string selfaAdminName, string adminPwd)
         {
             ConnectionOptions op = new ConnectionOptions
@@ -590,38 +544,8 @@ namespace SuperNetwork
                 return "";
         }
 
-
-        ///// <summary>
-        ///// 提取开启代理/cdn服务后的客户端真实IP
-        ///// </summary>
-        ///// <returns></returns>
-        //public static string GetTrueIP()
-        //{
-        //    string ip = string.Empty;
-        //    string X_Forwarded_For = HttpContext.Current.Request.Headers["X-Forwarded-For"];
-        //    if (!string.IsNullOrWhiteSpace(X_Forwarded_For))
-        //    {
-        //        ip = X_Forwarded_For;
-        //    }
-        //    else
-        //    {
-        //        string CF_Connecting_IP = HttpContext.Current.Request.Headers["CF-Connecting-IP"];
-        //        if (!string.IsNullOrWhiteSpace(CF_Connecting_IP))
-        //        {
-        //            ip = CF_Connecting_IP;
-        //        }
-        //        else
-        //        {
-        //            ip = HttpContext.Current.Request.UserHostAddress;
-        //        }
-        //    }
-        //    return ip;
-        //}
-
-
-        static PingCompletedEventHandler ipHandle = null;
-        static PingCompletedEventHandler ipNoHandle = null;
         static readonly List<string> ipList = new List<string>();
+        static int count = 0;
         /// <summary>
         /// 
         /// </summary>
@@ -635,13 +559,28 @@ namespace SuperNetwork
         {
             try
             {
-                ipHandle = userIP;
-                ipNoHandle = noUserIP;
                 for (int i = startIndex; i <= stopIndex; i++)
                 {
                     Ping myPing;
                     myPing = new Ping();
-                    myPing.PingCompleted += new PingCompletedEventHandler(_myPing_PingCompleted);
+                    myPing.PingCompleted += (sender,e)=> 
+                    {
+                        if (e.Reply.Status == IPStatus.Success)
+                        {
+                            ipList.Add(e.Reply.Address.ToString());
+                            userIP?.Invoke(count + 1, e);
+                        }
+                        else
+                        {
+                            noUserIP?.Invoke(count + 1, e);
+                        }
+                        count++;
+
+                        if (count >= 255)
+                        {
+                            count = 0;
+                        }
+                    };
                     string pingIP = ipPrefix + i.ToString();
                     myPing.SendAsync(pingIP, pingTime, pingIP);
                     await Task.Delay(5);
@@ -651,36 +590,17 @@ namespace SuperNetwork
             {
             }
         }
-        static int count = 0;
-        private static void _myPing_PingCompleted(object sender, PingCompletedEventArgs e)
-        {
-
-            if (e.Reply.Status == IPStatus.Success)
-            {
-                ipList.Add(e.Reply.Address.ToString());
-                ipHandle?.Invoke(count + 1, e);
-            }
-            else
-            {
-                ipNoHandle?.Invoke(count + 1, e);
-            }
-            count++;
-
-            if (count >= 255)
-            {
-                count = 0;
-            }
-        }
         /// <summary>
         /// 获取本机各网卡的详细信息  
         /// </summary>  
+        [SupportedOSPlatform("windows")]
         public static List<NetworkInterfaceInfo> ShowNetworkInterfaceMessage()
         {
             NetworkInterface[] fNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
             List<NetworkInterfaceInfo> list = new List<NetworkInterfaceInfo>();
             foreach (NetworkInterface adapter in fNetworkInterfaces)
             {
-                #region " 网卡类型 "
+                #region 网卡类型
                 NetworkCardType fCardType = NetworkCardType.Nono;
                 string fRegistryKey = "SYSTEM\\CurrentControlSet\\Control\\Network\\{4D36E972-E325-11CE-BFC1-08002BE10318}\\" + adapter.Id + "\\Connection";
                 RegistryKey rk = Registry.LocalMachine.OpenSubKey(fRegistryKey, false);
@@ -743,7 +663,8 @@ namespace SuperNetwork
         /// <summary>
         /// 获得本机真实物理网卡IP
         /// </summary>
-        /// <returns></returns>
+        /// <returns></returns>      
+        [SupportedOSPlatform("windows")]
         public static IList<string> GetPhysicsNetworkCardIP()
         {
             var networkCardIPs = new List<string>();

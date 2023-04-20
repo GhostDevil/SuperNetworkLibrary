@@ -35,7 +35,7 @@ namespace SuperNetwork.XJSocket
         {
             Ip = ip;
             Client = client;
-            nStream = ns;
+            NStream = ns;
         }
         /// <summary>
         /// 当前IP地址,端口号
@@ -48,11 +48,11 @@ namespace SuperNetwork.XJSocket
         /// <summary>
         /// 承载客户端Socket的网络流
         /// </summary>
-        public NetworkStream nStream { get; set; }
+        public NetworkStream NStream { get; set; }
         /// <summary>
         /// 发生异常时不为null.
         /// </summary>
-        public Exception ex { get; set; }
+        public Exception Ex { get; set; }
         /// <summary>
         /// 异常枚举
         /// </summary>

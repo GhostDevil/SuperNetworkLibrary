@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using SuperNetwork.TxSocket.PasswordManage;
-using SuperNetwork.PublicClass;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.InternalClass;
+using SuperNetwork.TxSocket.InternalTool;
 namespace SuperNetwork.TxSocket.Basics
 {
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace SuperNetwork.TxSocket.PublicTool
+﻿namespace SuperNetwork.TxSocket.InternalTool
 {
     /// <summary>
     /// 一个数据交换暗号的常量中心

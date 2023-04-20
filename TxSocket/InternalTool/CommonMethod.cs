@@ -3,7 +3,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 
-namespace SuperNetwork.TxSocket.PublicTool
+namespace SuperNetwork.TxSocket.InternalTool
 {
     /// <summary>
     /// 普通方法工具箱

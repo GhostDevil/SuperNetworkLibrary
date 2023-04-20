@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.TxSocket.InternalTool;
 using SuperNetwork.TxSocket.FileCenter;
 using System.IO;
 namespace SuperNetwork.TxSocket.PasswordManage

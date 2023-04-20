@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SuperNetwork.TxSocket.PublicTool
+namespace SuperNetwork.TxSocket.InternalTool
 {
     internal class RandomPublic
     {

@@ -109,7 +109,7 @@ namespace SuperNetwork.XJSocket
             {
                 Sockets sks = new Sockets
                 {
-                    ex = skex
+                    Ex = skex
                 };
                 pushSockets?.Invoke(sks);//推送至UI
 
@@ -136,7 +136,7 @@ namespace SuperNetwork.XJSocket
                 //推送新客户端
                 pushSockets?.Invoke(sks);
                 //客户端异步接收
-                sks.nStream.BeginRead(sks.RecBuffer, 0, sks.RecBuffer.Length, new AsyncCallback(EndReader), sks);
+                sks.NStream.BeginRead(sks.RecBuffer, 0, sks.RecBuffer.Length, new AsyncCallback(EndReader), sks);
                 //主动向客户端发送一条连接成功信息 
                 if (stream.CanWrite)
                 {
@@ -151,7 +151,7 @@ namespace SuperNetwork.XJSocket
                 Sockets sk = new Sockets
                 {
                     ClientDispose = true,//客户端退出
-                    ex = new Exception(exs.ToString() + "新连接监听出现异常")
+                    Ex = new Exception(exs.ToString() + "新连接监听出现异常")
                 };
                 pushSockets?.Invoke(sk);//推送至UI
             }
@@ -169,9 +169,9 @@ namespace SuperNetwork.XJSocket
                     if (sks.NewClientFlag || sks.Offset != 0)
                     {
                         sks.NewClientFlag = false;
-                        sks.Offset = sks.nStream.EndRead(ir);
+                        sks.Offset = sks.NStream.EndRead(ir);
                         pushSockets?.Invoke(sks);//推送至UI
-                        sks.nStream.BeginRead(sks.RecBuffer, 0, sks.RecBuffer.Length, new AsyncCallback(EndReader), sks);
+                        sks.NStream.BeginRead(sks.RecBuffer, 0, sks.RecBuffer.Length, new AsyncCallback(EndReader), sks);
                     }
                 }
                 catch (Exception skex)
@@ -182,7 +182,7 @@ namespace SuperNetwork.XJSocket
                         ClientList.Remove(sks);
                         Sockets sk = sks;
                         sk.ClientDispose = true;//客户端退出
-                        sk.ex = skex;
+                        sk.Ex = skex;
                         pushSockets?.Invoke(sks);//推送至UI
                     }
                 }
@@ -254,7 +254,7 @@ namespace SuperNetwork.XJSocket
                     if (sks.Client.Connected)
                     {
                         //获取当前流进行写入.
-                        NetworkStream nStream = sks.nStream;
+                        NetworkStream nStream = sks.NStream;
                         if (nStream.CanWrite)
                         {
                             byte[] buffer = SendDataBuffer;
@@ -280,7 +280,7 @@ namespace SuperNetwork.XJSocket
                     {
                         //没有连接时,标识退出 
                         sks.ClientDispose = true;//如果出现异常,标识客户端下线
-                        sks.ex = new Exception("客户端无连接");
+                        sks.Ex = new Exception("客户端无连接");
                         pushSockets?.Invoke(sks);//推送至UI
                     }
                 }
@@ -290,7 +290,7 @@ namespace SuperNetwork.XJSocket
                 Sockets sks = new Sockets
                 {
                     ClientDispose = true,//如果出现异常,标识客户端退出
-                    ex = skex
+                    Ex = skex
                 };
                 pushSockets?.Invoke(sks);//推送至UI
 
@@ -312,7 +312,7 @@ namespace SuperNetwork.XJSocket
                     if (sks.Client.Connected)
                     {
                         //获取当前流进行写入.
-                        NetworkStream nStream = sks.nStream;
+                        NetworkStream nStream = sks.NStream;
                         if (nStream.CanWrite)
                         {
                             byte[] buffer = Encoding.UTF8.GetBytes(SendData);
@@ -339,7 +339,7 @@ namespace SuperNetwork.XJSocket
                         //没有连接时,标识退出
                         Sockets ks = new Sockets();
                         sks.ClientDispose = true;//如果出现异常,标识客户端下线
-                        sks.ex = new Exception("客户端无连接");
+                        sks.Ex = new Exception("客户端无连接");
                         pushSockets?.Invoke(sks);//推送至UI
                     }
                 }
@@ -349,7 +349,7 @@ namespace SuperNetwork.XJSocket
                 Sockets sks = new Sockets
                 {
                     ClientDispose = true,//如果出现异常,标识客户端退出
-                    ex = skex
+                    Ex = skex
                 };
                 pushSockets?.Invoke(sks);//推送至UI
             }

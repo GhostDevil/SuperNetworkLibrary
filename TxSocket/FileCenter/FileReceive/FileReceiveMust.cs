@@ -1,5 +1,5 @@
 ﻿using SuperNetwork.TxSocket.FileCenter.FileBase;
-using SuperNetwork.TxSocket.PublicTool;
+using SuperNetwork.TxSocket.InternalTool;
 
 namespace SuperNetwork.TxSocket.FileCenter.FileReceive
 {

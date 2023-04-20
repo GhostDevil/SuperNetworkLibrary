@@ -13,6 +13,14 @@
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="TxSocket\**" />
+	  <Compile Remove="XJSocket\**" />
+	  <EmbeddedResource Remove="TxSocket\**" />
+	  <EmbeddedResource Remove="XJSocket\**" />
+	  <None Remove="TxSocket\**" />
+	  <None Remove="XJSocket\**" />
+	</ItemGroup>
+	<ItemGroup>
 	  <None Remove=".gitattributes" />
 	  <None Remove=".gitignore" />
 	  <None Remove="README.md" />
@@ -30,8 +38,8 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="WebSocket4Net" Version="0.15.2" />
-		<PackageReference Include="System.Management" Version="7.0.0" />
-		<PackageReference Include="SuperSocket" Version="2.0.0-beta.12" />
+		<PackageReference Include="System.Management" Version="7.0.1" />
+		<PackageReference Include="SuperSocket" Version="2.0.0-beta.15" />
 	</ItemGroup>
 	
 </Project>
