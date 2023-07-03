@@ -35,8 +35,15 @@ namespace SuperNetwork.SuperSocket
 
             public BytesPackage Filter(ref SequenceReader<byte> reader)
             {
-                BytesPackage txtPackage = new BytesPackage { Datas = reader.Sequence.ToArray() };
-                while (reader.TryRead(out _)) ;
+                byte[] bytes = new byte[reader.Length];
+                BytesPackage txtPackage = new BytesPackage(); //{ Datas = reader.Sequence.ToArray() };
+                int index = 0;
+                while (reader.TryRead(out var da))
+                {
+                    bytes[index] = da;
+                    index++;
+                }
+                txtPackage.Datas = bytes;
                 return txtPackage;
             }
 
@@ -68,7 +75,7 @@ namespace SuperNetwork.SuperSocket
                 host = SuperSocketHostBuilder.Create<BytesPackage, BytesPipelineFilter>()
                 .ConfigureSuperSocket(options =>
                 {
-                    
+
                     options.Name = Options.Name;
                     options.Listeners = Options.Listeners;
                     options.ReceiveBufferSize = Options.ReceiveBufferSize;
@@ -201,18 +208,22 @@ namespace SuperNetwork.SuperSocket
                 else
                     await Task.FromResult(false);
             }
-            catch (Exception ex) { }
+            catch (Exception ex) { Debug.WriteLine(ex); }
         }
         public void Send(string endPoint, byte[] data)
         {
-            ValueTask? t = Sessions.Values.FirstOrDefault(o => o.RemoteEndPoint.ToString() == endPoint && o.State is SessionState.Connected)?.SendAsync(data);
-            if (t.HasValue)
+            try
             {
-                while (!t.Value.IsCompleted)
+                ValueTask? t = Sessions.Values.FirstOrDefault(o => o.RemoteEndPoint.ToString() == endPoint && o.State is SessionState.Connected)?.SendAsync(data);
+                if (t.HasValue)
                 {
-                    Task.Delay(5).Wait();
+                    while (!t.Value.IsCompleted)
+                    {
+                        Task.Delay(5).Wait();
+                    }
                 }
             }
+            catch (Exception ex) { Debug.WriteLine(ex); }
         }
     }
 }
