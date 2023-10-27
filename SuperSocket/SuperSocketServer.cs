@@ -175,7 +175,23 @@ namespace SuperNetwork.SuperSocket
             SessionClosed?.Invoke(session, args);
 
         }
-
+        public async void CloseSession(string endpoint, CloseReason reason)
+        {
+            var ses = Sessions.FirstOrDefault(o => o.Value.RemoteEndPoint.ToString() == endpoint);
+            if (ses.Value != null)
+            {
+                await ses.Value.CloseAsync(reason);
+            }
+        }
+        public async void CloseBySessionId(string id, CloseReason reason)
+        {
+            if (Sessions.ContainsKey(id))
+            {
+                //移除不成功则重复移除
+                if (Sessions.TryGetValue(id, out var ses))
+                await ses.CloseAsync(reason);
+            }
+        }
         /// <summary>
         /// 启动服务
         /// </summary>
