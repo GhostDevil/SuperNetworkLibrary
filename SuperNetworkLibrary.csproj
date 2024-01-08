@@ -2,13 +2,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>net7.0;net8.0</TargetFrameworks>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<RootNamespace>SuperNetwork</RootNamespace>
 		<FileVersion>23.06.8.2</FileVersion>
-		<AssemblyVersion>23.06.2.0</AssemblyVersion>
+		<AssemblyVersion>24.01.04.0</AssemblyVersion>
+		<ProductVersion>24.01.04.0</ProductVersion>
 		<Description>网络通讯辅助类</Description>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
@@ -38,7 +39,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="WebSocket4Net" Version="0.15.2" />
-		<PackageReference Include="System.Management" Version="7.0.2" />
+		<PackageReference Include="System.Management" Version="8.0.0" />
 		<PackageReference Include="SuperSocket" Version="2.0.0-beta.18" />
 	</ItemGroup>
 	
